@@ -6,11 +6,6 @@
     $isEdit = $type === 'edit' && $typeOfWeight;
     $pageTitle = $isEdit ? 'ویرایش نوع وزن' : 'افزودن نوع وزن';
     $formAction = $isEdit ? route('admin.type-of-weights.update', $typeOfWeight) : route('admin.type-of-weights.store');
-    if ($errors->any()) {
-        $statusChecked = (bool) old('status');
-    } else {
-        $statusChecked = $isEdit ? $typeOfWeight->status === 'active' : true;
-    }
 @endphp
 
 <div class="main-content">
@@ -75,7 +70,7 @@
 
                         <div class="row">
                             <div class="col-12">
-                                <form class="row" method="post" action="{{ $formAction }}" enctype="multipart/form-data" id="type-of-weight-form">
+                                <form class="row" method="post" action="{{ $formAction }}" id="type-of-weight-form">
                                     @csrf
                                     @if ($isEdit)
                                         @method('PUT')
@@ -89,38 +84,7 @@
                                     <div class="form-group col-lg-6 col-12">
                                         <label for="tow-weight">مقدار وزن (اختیاری)</label>
                                         <input name="weight" type="number" min="0" class="form-control text-left" id="tow-weight" value="{{ old('weight', $typeOfWeight->weight ?? '') }}" placeholder="عدد صحیح — در صورت عدم نیاز خالی بگذارید" dir="ltr">
-                                        <small class="form-text text-muted">در صورت نیاز عدد صحیح (مثلاً معادل گرم)؛ می‌تواند خالی باشد.</small>
-                                    </div>
-
-                                    <div class="form-group col-lg-6 col-12">
-                                        <label for="tow-image">تصویر</label>
-                                        <div class="custom-file">
-                                            <input name="image" type="file" class="custom-file-input" id="tow-image" accept="image/*">
-                                            <label class="custom-file-label" for="tow-image" data-default="انتخاب تصویر">انتخاب تصویر</label>
-                                        </div>
-                                        <small class="form-text text-muted">با انتخاب فایل جدید، تصویر قبلی جایگزین می‌شود.</small>
-                                    </div>
-
-                                    @if ($isEdit && $typeOfWeight->image_url)
-                                        <div class="form-group col-lg-6 col-12">
-                                            <label class="d-block">تصویر فعلی</label>
-                                            <div class="d-flex align-items-center p-3 rounded border bg-light">
-                                                <img src="{{ $typeOfWeight->image_url }}" alt="{{ $typeOfWeight->title }}" class="rounded mr-3" style="max-height: 88px; max-width: 120px; object-fit: cover;">
-                                                <span class="text-muted small">فایل جدید این تصویر را عوض می‌کند.</span>
-                                            </div>
-                                        </div>
-                                    @endif
-
-                                    <div class="form-group col-12" id="tow-new-image-preview-wrap" style="display:none;">
-                                        <label class="d-block">پیش‌نمایش تصویر جدید</label>
-                                        <img src="" alt="" id="tow-new-image-preview" class="rounded border" style="max-height: 120px; max-width: 160px; object-fit: cover;">
-                                    </div>
-
-                                    <div class="form-group col-lg-6 col-12 d-flex align-items-end">
-                                        <div class="custom-control custom-switch custom-checkbox-success w-100">
-                                            <input name="status" type="checkbox" class="custom-control-input" id="tow-status-switch" value="1" @checked($statusChecked)>
-                                            <label class="custom-control-label" for="tow-status-switch">وضعیت (فعال)</label>
-                                        </div>
+                                        <small class="form-text text-muted">مطابق فیلد اختیاری وزن در دیتابیس.</small>
                                     </div>
 
                                     <div class="form-group col-12 mt-2">
@@ -141,28 +105,3 @@
 </div>
 
 @endsection
-
-@push('scripts')
-<script>
-    (function () {
-        var input = document.getElementById('tow-image');
-        if (!input) return;
-        var label = input.nextElementSibling;
-        var previewWrap = document.getElementById('tow-new-image-preview-wrap');
-        var previewImg = document.getElementById('tow-new-image-preview');
-        input.addEventListener('change', function () {
-            var file = this.files && this.files[0];
-            if (label) {
-                label.textContent = file ? file.name : (label.getAttribute('data-default') || 'انتخاب تصویر');
-            }
-            if (file && previewWrap && previewImg) {
-                previewImg.src = URL.createObjectURL(file);
-                previewWrap.style.display = 'block';
-            } else if (previewWrap) {
-                previewWrap.style.display = 'none';
-                if (previewImg) previewImg.src = '';
-            }
-        });
-    })();
-</script>
-@endpush

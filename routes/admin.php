@@ -18,7 +18,5 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         ->name('category.toggle-status');
     Route::resource('category', App\Http\Controllers\Admin\Products\CategoryController::class);
 
-    Route::patch('type-of-weights/{type_of_weight}/toggle-status', [App\Http\Controllers\Admin\Products\TypeOfWeightController::class, 'toggleStatus'])
-        ->name('type-of-weights.toggle-status');
     Route::resource('type-of-weights', App\Http\Controllers\Admin\Products\TypeOfWeightController::class);
 });

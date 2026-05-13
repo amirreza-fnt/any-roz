@@ -14,18 +14,60 @@ class PublicUploads
         return $file->store($directory, self::DISK);
     }
 
+    /**
+     * Absolute public URL for a stored relative path (e.g. images/category/xxx.jpg).
+     * Uses filesystem checks + asset() so it works without storage:link and with subfolders.
+     */
     public static function url(?string $relativePath): ?string
     {
         if (! $relativePath) {
             return null;
         }
 
-        if (Storage::disk(self::DISK)->exists($relativePath)) {
-            return Storage::disk(self::DISK)->url($relativePath);
+        $p = trim(str_replace('\\', '/', $relativePath));
+        if ($p === '') {
+            return null;
         }
 
-        if (Storage::disk('public')->exists($relativePath)) {
-            return Storage::disk('public')->url($relativePath);
+        if (preg_match('#^https?://#i', $p)) {
+            return $p;
+        }
+
+        $p = ltrim($p, '/');
+
+        if (str_starts_with($p, 'uploads/')) {
+            $p = substr($p, strlen('uploads/'));
+        }
+
+        if (preg_match('#(^|/)images/category/#', $p)) {
+            if (! str_starts_with($p, 'images/category/')) {
+                $pos = strpos($p, 'images/category/');
+                if ($pos !== false) {
+                    $p = substr($p, $pos);
+                }
+            }
+        }
+
+        $publicFile = public_path('uploads/'.$p);
+        if (is_file($publicFile)) {
+            return asset('uploads/'.$p);
+        }
+
+        $storageFile = storage_path('app/public/'.$p);
+        if (is_file($storageFile)) {
+            return asset('storage/'.$p);
+        }
+
+        if (Storage::disk(self::DISK)->exists($p)) {
+            return asset('uploads/'.$p);
+        }
+
+        if (Storage::disk('public')->exists($p)) {
+            return asset('storage/'.$p);
+        }
+
+        if (str_starts_with($p, 'images/category/')) {
+            return asset('uploads/'.$p);
         }
 
         return null;
@@ -37,9 +79,15 @@ class PublicUploads
             return;
         }
 
+        $p = trim(str_replace('\\', '/', $relativePath));
+        $p = ltrim($p, '/');
+        if (str_starts_with($p, 'uploads/')) {
+            $p = substr($p, strlen('uploads/'));
+        }
+
         foreach ([self::DISK, 'public'] as $disk) {
-            if (Storage::disk($disk)->exists($relativePath)) {
-                Storage::disk($disk)->delete($relativePath);
+            if (Storage::disk($disk)->exists($p)) {
+                Storage::disk($disk)->delete($p);
             }
         }
     }

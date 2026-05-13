@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin\Products;
 
 use App\Http\Controllers\Controller;
 use App\Models\TypeOfWeight;
-use App\Support\PublicUploads;
 use Illuminate\Http\Request;
 
 class TypeOfWeightController extends Controller
@@ -29,25 +28,12 @@ class TypeOfWeightController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'weight' => 'nullable|integer|min:0',
-            'image' => 'nullable|image|max:4096',
         ]);
-
-        $status = 'active';
-        if (! $request->status) {
-            $status = 'inactive';
-        }
-
-        $image = null;
-        if ($request->hasFile('image')) {
-            $image = PublicUploads::store($request->file('image'), 'images/type-of-weight');
-        }
 
         try {
             TypeOfWeight::create([
                 'title' => $request->title,
                 'weight' => $request->filled('weight') ? (int) $request->weight : null,
-                'status' => $status,
-                'image' => $image,
             ]);
             message('success', 'درج با موفقیت انجام شد.');
 
@@ -77,22 +63,10 @@ class TypeOfWeightController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'weight' => 'nullable|integer|min:0',
-            'image' => 'nullable|image|max:4096',
         ]);
-
-        $status = 'active';
-        if (! $request->status) {
-            $status = 'inactive';
-        }
-
-        if ($request->hasFile('image')) {
-            PublicUploads::delete($type_of_weight->image);
-            $type_of_weight->image = PublicUploads::store($request->file('image'), 'images/type-of-weight');
-        }
 
         $type_of_weight->title = $request->title;
         $type_of_weight->weight = $request->filled('weight') ? (int) $request->weight : null;
-        $type_of_weight->status = $status;
 
         try {
             $type_of_weight->save();
@@ -114,7 +88,6 @@ class TypeOfWeightController extends Controller
 
                 return redirect()->back();
             }
-            PublicUploads::delete($type_of_weight->image);
             $type_of_weight->delete();
             message('success', 'حذف با موفقیت انجام شد.');
         } catch (\Exception $e) {
@@ -122,14 +95,5 @@ class TypeOfWeightController extends Controller
         }
 
         return redirect()->route('admin.type-of-weights.index');
-    }
-
-    public function toggleStatus(TypeOfWeight $type_of_weight)
-    {
-        $type_of_weight->status = $type_of_weight->status === 'active' ? 'inactive' : 'active';
-        $type_of_weight->save();
-        message('success', 'وضعیت به‌روزرسانی شد.');
-
-        return redirect()->back();
     }
 }

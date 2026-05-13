@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Support\PublicUploads;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,8 +13,6 @@ class TypeOfWeight extends Model
     protected $fillable = [
         'title',
         'weight',
-        'status',
-        'image',
     ];
 
     protected $casts = [
@@ -25,10 +22,5 @@ class TypeOfWeight extends Model
     public function products(): HasMany
     {
         return $this->hasMany(Product::class, 'weight_id');
-    }
-
-    public function getImageUrlAttribute(): ?string
-    {
-        return PublicUploads::url($this->image);
     }
 }
