@@ -86,5 +86,53 @@
                 </li>
             </ul>
         </li>
+        <li class="{{ request()->routeIs('admin.gift-codes.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="award"></i>
+                <span>کدهای هدیه</span>
+            </a>
+            <ul>
+                <li>
+                    <a class="{{ request()->routeIs('admin.gift-codes.create') ? 'active' : '' }}" href="{{ route('admin.gift-codes.create') }}">افزودن کد هدیه</a>
+                </li>
+                <li>
+                    <a class="{{ request()->routeIs('admin.gift-codes.index') ? 'active' : '' }}" href="{{ route('admin.gift-codes.index') }}">لیست کدهای هدیه</a>
+                </li>
+            </ul>
+        </li>
+        <li class="{{ request()->routeIs('admin.discount-codes.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="tag"></i>
+                <span>کدهای تخفیف</span>
+            </a>
+            <ul>
+                <li>
+                    <a class="{{ request()->routeIs('admin.discount-codes.create') ? 'active' : '' }}" href="{{ route('admin.discount-codes.create') }}">افزودن کد تخفیف</a>
+                </li>
+                <li>
+                    <a class="{{ request()->routeIs('admin.discount-codes.index') ? 'active' : '' }}" href="{{ route('admin.discount-codes.index') }}">لیست کدهای تخفیف</a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a class="{{ request()->routeIs('admin.contact-settings.*') ? 'active' : '' }}" href="{{ route('admin.contact-settings.edit') }}">
+                <i class="nav-link-icon" data-feather="phone"></i>
+                <span>مدیریت ارتباطات</span>
+            </a>
+        </li>
+        <li class="{{ request()->routeIs('admin.shipping-configs.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="truck"></i>
+                <span>روش ارسال</span>
+            </a>
+            <ul>
+                <li>
+                    <a class="{{ request()->routeIs('admin.shipping-configs.create') ? 'active' : '' }}" href="{{ route('admin.shipping-configs.create') }}">افزودن روش</a>
+                </li>
+                <li>
+                    <a class="{{ request()->routeIs('admin.shipping-configs.index') ? 'active' : '' }}" href="{{ route('admin.shipping-configs.index') }}">لیست روش‌ها</a>
+                </li>
+            </ul>
+        </li>
     </ul>
 </div>

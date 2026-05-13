@@ -41,4 +41,19 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::patch('articles/{article}/toggle-publish', [App\Http\Controllers\Admin\Articles\ArticleController::class, 'togglePublish'])
         ->name('articles.toggle-publish');
     Route::resource('articles', App\Http\Controllers\Admin\Articles\ArticleController::class);
+
+    Route::patch('gift-codes/{gift_code}/toggle-status', [App\Http\Controllers\Admin\Marketing\GiftCodeController::class, 'toggleStatus'])
+        ->name('gift-codes.toggle-status');
+    Route::resource('gift-codes', App\Http\Controllers\Admin\Marketing\GiftCodeController::class);
+
+    Route::patch('discount-codes/{discount_code}/toggle-status', [App\Http\Controllers\Admin\Marketing\DiscountCodeController::class, 'toggleStatus'])
+        ->name('discount-codes.toggle-status');
+    Route::resource('discount-codes', App\Http\Controllers\Admin\Marketing\DiscountCodeController::class);
+
+    Route::get('contact-settings', [App\Http\Controllers\Admin\Settings\ContactSettingsController::class, 'edit'])->name('contact-settings.edit');
+    Route::put('contact-settings', [App\Http\Controllers\Admin\Settings\ContactSettingsController::class, 'update'])->name('contact-settings.update');
+
+    Route::patch('shipping-configs/{shipping_config}/toggle-status', [App\Http\Controllers\Admin\Shipping\ShippingConfigController::class, 'toggleStatus'])
+        ->name('shipping-configs.toggle-status');
+    Route::resource('shipping-configs', App\Http\Controllers\Admin\Shipping\ShippingConfigController::class)->except(['destroy']);
 });
