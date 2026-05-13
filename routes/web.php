@@ -16,3 +16,5 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('mag/{article:slug}', [App\Http\Controllers\ArticlePublicController::class, 'show'])->name('articles.public');

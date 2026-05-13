@@ -24,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
             public_path('uploads'),
             public_path('uploads/images/category'),
             public_path('uploads/images/product'),
+            public_path('uploads/images/article'),
         ] as $dir) {
             File::ensureDirectoryExists($dir);
         }

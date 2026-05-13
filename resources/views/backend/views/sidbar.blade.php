@@ -1,17 +1,23 @@
 <div class="navigation-menu-body">
     <ul>
         <li class="navigation-divider">صفحات : </li>
-        <li class="{{ request()->routeIs('admin.dashboard') ? 'open' : '' }}">
-            <a href="{{ route('admin.dashboard') }}">
+        <li>
+            <a class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                 <i class="nav-link-icon" data-feather="bar-chart-2"></i>
-                <span>داشبورد</span>
+                <span>داشبورد مدیریت</span>
             </a>
-            <ul>
-                <li>
-                    <a class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">داشبورد مدیریت</a>
-                </li>
-                <li><a href="dashboard-two.html">داشبورد حسابداری</a></li>
-            </ul>
+        </li>
+        <li>
+            <a class="{{ request()->routeIs('admin.dashboard.accounting') ? 'active' : '' }}" href="{{ route('admin.dashboard.accounting') }}">
+                <i class="nav-link-icon" data-feather="pie-chart"></i>
+                <span>داشبورد حسابداری</span>
+            </a>
+        </li>
+        <li>
+            <a class="{{ request()->routeIs('admin.dashboard.supply') ? 'active' : '' }}" href="{{ route('admin.dashboard.supply') }}">
+                <i class="nav-link-icon" data-feather="truck"></i>
+                <span>داشبورد تأمین</span>
+            </a>
         </li>
         <li class="{{ request()->routeIs('admin.category.*') ? 'open' : '' }}">
             <a href="javascript:;">
@@ -64,8 +70,19 @@
                 <li>
                     <a class="{{ request()->routeIs('admin.orders.index') ? 'active' : '' }}" href="{{ route('admin.orders.index') }}">همهٔ فاکتورها</a>
                 </li>
+            </ul>
+        </li>
+        <li class="{{ request()->routeIs('admin.articles.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="book-open"></i>
+                <span>مقالات</span>
+            </a>
+            <ul>
                 <li>
-                    <a class="{{ request()->routeIs('admin.orders.supply') ? 'active' : '' }}" href="{{ route('admin.orders.supply') }}">ارسال‌شده به تأمین</a>
+                    <a class="{{ request()->routeIs('admin.articles.create') ? 'active' : '' }}" href="{{ route('admin.articles.create') }}">افزودن مقاله</a>
+                </li>
+                <li>
+                    <a class="{{ request()->routeIs('admin.articles.index') ? 'active' : '' }}" href="{{ route('admin.articles.index') }}">لیست مقالات</a>
                 </li>
             </ul>
         </li>

@@ -31,19 +31,16 @@
             </nav>
         </div>
 
-        <div class="orders-toolbar card border-0 shadow-sm mb-3">
-            <div class="card-body py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
-                <div class="d-flex flex-wrap align-items-center gap-2">
-                    <a href="{{ route('admin.orders.index') }}" class="btn btn-sm {{ $supplyMode ? 'btn-outline-primary' : 'btn-primary' }}">همهٔ فاکتورها</a>
-                    <a href="{{ route('admin.orders.supply') }}" class="btn btn-sm {{ $supplyMode ? 'btn-primary' : 'btn-outline-primary' }}">ارسال‌شده به تأمین</a>
-                </div>
-                @if ($supplyMode)
-                    <span class="supply-pill">فقط فاکتورهای ارسال‌شده به بخش تأمین</span>
-                @else
-                    <span class="text-muted small">فاکتورها پس از خرید کاربر اینجا نمایش داده می‌شوند؛ از اینجا وضعیت را مدیریت کنید یا به تأمین بفرستید.</span>
-                @endif
-            </div>
+        @if (! $supplyMode)
+            <p class="text-muted small mb-3">برای مدیریت فاکتورهای ارسال‌شده به تأمین، از «داشبورد تأمین» در منوی کناری استفاده کنید.</p>
+        @endif
+
+        @if ($supplyMode)
+        <div class="alert alert-info border-0 shadow-sm d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <span>این لیست فقط فاکتورهای ارسال‌شده به بخش تأمین را نشان می‌دهد.</span>
+            <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-outline-primary">مشاهدهٔ همهٔ فاکتورها</a>
         </div>
+        @endif
 
         <div class="card">
             <div class="card-body">
@@ -104,15 +101,6 @@
                                         <a href="{{ route('admin.orders.show', $o) }}" class="btn btn-sm btn-outline-primary" title="جزئیات و چاپ">
                                             <i data-feather="file-text" class="width-16 height-16"></i>
                                         </a>
-                                        @if (! $o->sent_to_supply)
-                                            <form action="{{ route('admin.orders.send-to-supply', $o) }}" method="post" class="d-inline" onsubmit="return confirm('این فاکتور به بخش تأمین ارسال شود؟');">
-                                                @csrf
-                                                @method('PATCH')
-                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="ارسال به بخش تأمین">
-                                                    <i data-feather="send" class="width-16 height-16"></i>
-                                                </button>
-                                            </form>
-                                        @endif
                                     </td>
                                 </tr>
                             @empty

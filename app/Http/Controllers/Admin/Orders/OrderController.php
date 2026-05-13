@@ -15,7 +15,6 @@ class OrderController extends Controller
         $orders = Order::query()
             ->with(['user'])
             ->withCount('items')
-            ->where('sent_to_supply', false)
             ->orderByDesc('id')
             ->get();
 
@@ -79,30 +78,39 @@ class OrderController extends Controller
         return redirect()->back();
     }
 
-    public function sendToSupply(Request $request, Order $order)
+    public function toggleSupply(Request $request, Order $order)
     {
-        if ($order->sent_to_supply) {
-            message('warning', 'این فاکتور قبلاً به بخش تأمین ارسال شده است.');
-
-            return redirect()->back();
-        }
-
         $data = $request->validate([
             'note' => 'nullable|string|max:2000',
         ]);
 
-        $order->sent_to_supply = true;
-        $order->sent_to_supply_at = now();
-        $order->save();
+        if ($order->sent_to_supply) {
+            $order->sent_to_supply = false;
+            $order->sent_to_supply_at = null;
+            $order->save();
 
-        OrderHistory::create([
-            'order_id' => $order->id,
-            'user_id' => auth()->id(),
-            'status' => 'sent_to_supply',
-            'note' => ! empty($data['note']) ? $data['note'] : 'ارسال به بخش تأمین',
-        ]);
+            OrderHistory::create([
+                'order_id' => $order->id,
+                'user_id' => auth()->id(),
+                'status' => 'recalled_from_supply',
+                'note' => ! empty($data['note']) ? $data['note'] : 'بازگشت از بخش تأمین',
+            ]);
 
-        message('success', 'فاکتور به بخش تأمین ارسال شد.');
+            message('success', 'فاکتور از بخش تأمین خارج شد.');
+        } else {
+            $order->sent_to_supply = true;
+            $order->sent_to_supply_at = now();
+            $order->save();
+
+            OrderHistory::create([
+                'order_id' => $order->id,
+                'user_id' => auth()->id(),
+                'status' => 'sent_to_supply',
+                'note' => ! empty($data['note']) ? $data['note'] : 'ارسال به بخش تأمین',
+            ]);
+
+            message('success', 'فاکتور به بخش تأمین ارسال شد.');
+        }
 
         return redirect()->back();
     }

@@ -29,6 +29,11 @@ class Category extends Model
         return $this->hasMany(self::class, 'parent_id');
     }
 
+    public function articles(): HasMany
+    {
+        return $this->hasMany(Article::class);
+    }
+
     public function getImageUrlAttribute(): ?string
     {
         return PublicUploads::url($this->image);

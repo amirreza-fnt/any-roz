@@ -147,15 +147,16 @@
                 </button>
             </div>
             <div class="d-flex flex-wrap gap-2 align-items-center">
-                @if (! $order->sent_to_supply)
-                    <form action="{{ route('admin.orders.send-to-supply', $order) }}" method="post" class="d-flex flex-wrap align-items-center gap-2" onsubmit="return confirm('این فاکتور به بخش تأمین ارسال شود؟');">
-                        @csrf
-                        @method('PATCH')
-                        <input type="text" name="note" class="form-control form-control-sm" style="min-width:200px" placeholder="یادداشت ارسال به تأمین (اختیاری)">
-                        <button type="submit" class="btn btn-sm btn-primary">ارسال به بخش تأمین</button>
-                    </form>
-                @else
-                    <span class="badge badge-success px-3 py-2">ارسال‌شده به تأمین در {{ $order->sent_to_supply_at?->format('Y/m/d H:i') }}</span>
+                <form action="{{ route('admin.orders.toggle-supply', $order) }}" method="post" class="d-flex flex-wrap align-items-center gap-2" onsubmit="return confirm(@json($order->sent_to_supply ? 'این فاکتور از بخش تأمین خارج شود؟' : 'این فاکتور به بخش تأمین ارسال شود؟'));">
+                    @csrf
+                    @method('PATCH')
+                    <input type="text" name="note" class="form-control form-control-sm" style="min-width:200px" placeholder="یادداشت (اختیاری)">
+                    <button type="submit" class="btn btn-sm {{ $order->sent_to_supply ? 'btn-outline-warning' : 'btn-primary' }}">
+                        {{ $order->sent_to_supply ? 'بازگشت از بخش تأمین' : 'ارسال به بخش تأمین' }}
+                    </button>
+                </form>
+                @if ($order->sent_to_supply && $order->sent_to_supply_at)
+                    <span class="badge badge-light border text-dark small">آخرین ارسال: {{ $order->sent_to_supply_at->format('Y/m/d H:i') }}</span>
                 @endif
             </div>
         </div>

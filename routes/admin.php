@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::get('dashboard', App\Http\Controllers\Admin\Dashboard::class)->name('dashboard');
+    Route::get('dashboard/accounting', App\Http\Controllers\Admin\DashboardAccounting::class)->name('dashboard.accounting');
+    Route::get('dashboard/supply', App\Http\Controllers\Admin\DashboardSupply::class)->name('dashboard.supply');
     Route::patch('category/{category}/toggle-status', [App\Http\Controllers\Admin\Products\CategoryController::class, 'toggleStatus'])
         ->name('category.toggle-status');
     Route::resource('category', App\Http\Controllers\Admin\Products\CategoryController::class);
@@ -34,5 +36,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::get('orders', [App\Http\Controllers\Admin\Orders\OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [App\Http\Controllers\Admin\Orders\OrderController::class, 'show'])->name('orders.show');
     Route::patch('orders/{order}/status', [App\Http\Controllers\Admin\Orders\OrderController::class, 'updateStatus'])->name('orders.update-status');
-    Route::patch('orders/{order}/send-to-supply', [App\Http\Controllers\Admin\Orders\OrderController::class, 'sendToSupply'])->name('orders.send-to-supply');
+    Route::patch('orders/{order}/toggle-supply', [App\Http\Controllers\Admin\Orders\OrderController::class, 'toggleSupply'])->name('orders.toggle-supply');
+
+    Route::patch('articles/{article}/toggle-publish', [App\Http\Controllers\Admin\Articles\ArticleController::class, 'togglePublish'])
+        ->name('articles.toggle-publish');
+    Route::resource('articles', App\Http\Controllers\Admin\Articles\ArticleController::class);
 });
