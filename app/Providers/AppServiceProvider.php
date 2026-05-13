@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +20,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        foreach ([
+            public_path('uploads/images/category'),
+            public_path('uploads/images/type-of-weight'),
+        ] as $dir) {
+            File::ensureDirectoryExists($dir);
+        }
     }
 }

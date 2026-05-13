@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\PublicUploads;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,6 +31,6 @@ class Category extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        return $this->image ? asset('storage/'.$this->image) : null;
+        return PublicUploads::url($this->image);
     }
 }

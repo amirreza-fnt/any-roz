@@ -44,6 +44,18 @@ return [
             'throw' => false,
         ],
 
+        /*
+         * Web-accessible uploads (no php artisan storage:link required).
+         * Files live under public/uploads and are served as /uploads/...
+         */
+        'uploads' => [
+            'driver' => 'local',
+            'root' => public_path('uploads'),
+            'url' => rtrim(env('APP_URL', ''), '/').'/uploads',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

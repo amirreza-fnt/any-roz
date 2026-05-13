@@ -3,13 +3,13 @@
 @section('main')
 
 @php
-    $isEdit = $type === 'edit' && $category;
-    $pageTitle = $isEdit ? 'ویرایش دسته‌بندی' : 'افزودن دسته‌بندی';
-    $formAction = $isEdit ? route('admin.category.update', $category) : route('admin.category.store');
+    $isEdit = $type === 'edit' && $typeOfWeight;
+    $pageTitle = $isEdit ? 'ویرایش نوع وزن' : 'افزودن نوع وزن';
+    $formAction = $isEdit ? route('admin.type-of-weights.update', $typeOfWeight) : route('admin.type-of-weights.store');
     if ($errors->any()) {
         $statusChecked = (bool) old('status');
     } else {
-        $statusChecked = $isEdit ? $category->status === 'active' : true;
+        $statusChecked = $isEdit ? $typeOfWeight->status === 'active' : true;
     }
 @endphp
 
@@ -24,7 +24,7 @@
                         <a href="{{ route('admin.dashboard') }}">خانه</a>
                     </li>
                     <li class="breadcrumb-item">
-                        <a href="{{ route('admin.category.index') }}">دسته‌بندی‌ها</a>
+                        <a href="{{ route('admin.type-of-weights.index') }}">انواع وزن</a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">{{ $pageTitle }}</li>
                 </ol>
@@ -35,7 +35,7 @@
             <div class="col-md-12">
                 <div class="card border-0 shadow-sm mb-3">
                     <div class="card-body d-flex flex-wrap justify-content-between align-items-center">
-                        <a href="{{ route('admin.category.index') }}" class="btn btn-outline-secondary btn-sm">
+                        <a href="{{ route('admin.type-of-weights.index') }}" class="btn btn-outline-secondary btn-sm">
                             <i data-feather="arrow-right" class="width-16 height-16"></i>
                             <span class="mr-1">بازگشت به لیست</span>
                         </a>
@@ -75,66 +75,60 @@
 
                         <div class="row">
                             <div class="col-12">
-                                <form class="row" method="post" action="{{ $formAction }}" enctype="multipart/form-data" id="category-form">
+                                <form class="row" method="post" action="{{ $formAction }}" enctype="multipart/form-data" id="type-of-weight-form">
                                     @csrf
                                     @if ($isEdit)
                                         @method('PUT')
                                     @endif
 
                                     <div class="form-group col-lg-6 col-12">
-                                        <label for="category-title">عنوان</label>
-                                        <input name="title" type="text" class="form-control text-left" id="category-title" value="{{ old('title', $category->title ?? '') }}" placeholder="عنوان دسته‌بندی را وارد کنید" dir="ltr" required>
+                                        <label for="tow-title">عنوان</label>
+                                        <input name="title" type="text" class="form-control text-left" id="tow-title" value="{{ old('title', $typeOfWeight->title ?? '') }}" placeholder="مثلاً کیلوگرم، گرم، بسته" dir="ltr" required>
                                     </div>
 
                                     <div class="form-group col-lg-6 col-12">
-                                        <label for="category-image">تصویر دسته‌بندی</label>
-                                        <div class="custom-file">
-                                            <input name="image" type="file" class="custom-file-input" id="category-image" accept="image/*">
-                                            <label class="custom-file-label" for="category-image" data-default="انتخاب تصویر">انتخاب تصویر</label>
-                                        </div>
-                                        <small class="form-text text-muted">فرمت تصویر؛ در صورت انتخاب فایل جدید، تصویر قبلی (در حالت ویرایش) جایگزین می‌شود.</small>
+                                        <label for="tow-weight">مقدار وزن (اختیاری)</label>
+                                        <input name="weight" type="number" min="0" class="form-control text-left" id="tow-weight" value="{{ old('weight', $typeOfWeight->weight ?? '') }}" placeholder="عدد صحیح — در صورت عدم نیاز خالی بگذارید" dir="ltr">
+                                        <small class="form-text text-muted">در صورت نیاز عدد صحیح (مثلاً معادل گرم)؛ می‌تواند خالی باشد.</small>
                                     </div>
 
-                                    @if ($isEdit && $category->image_url)
-                                        <div class="form-group col-12">
+                                    <div class="form-group col-lg-6 col-12">
+                                        <label for="tow-image">تصویر</label>
+                                        <div class="custom-file">
+                                            <input name="image" type="file" class="custom-file-input" id="tow-image" accept="image/*">
+                                            <label class="custom-file-label" for="tow-image" data-default="انتخاب تصویر">انتخاب تصویر</label>
+                                        </div>
+                                        <small class="form-text text-muted">با انتخاب فایل جدید، تصویر قبلی جایگزین می‌شود.</small>
+                                    </div>
+
+                                    @if ($isEdit && $typeOfWeight->image_url)
+                                        <div class="form-group col-lg-6 col-12">
                                             <label class="d-block">تصویر فعلی</label>
                                             <div class="d-flex align-items-center p-3 rounded border bg-light">
-                                                <img src="{{ $category->image_url }}" alt="{{ $category->title }}" id="current-category-image" class="rounded mr-3" style="max-height: 88px; max-width: 120px; object-fit: cover;">
-                                                <span class="text-muted small">پیش‌نمایش در کنار فرم نمایش داده می‌شود.</span>
+                                                <img src="{{ $typeOfWeight->image_url }}" alt="{{ $typeOfWeight->title }}" class="rounded mr-3" style="max-height: 88px; max-width: 120px; object-fit: cover;">
+                                                <span class="text-muted small">فایل جدید این تصویر را عوض می‌کند.</span>
                                             </div>
                                         </div>
                                     @endif
 
-                                    <div class="form-group col-12" id="new-image-preview-wrap" style="display:none;">
+                                    <div class="form-group col-12" id="tow-new-image-preview-wrap" style="display:none;">
                                         <label class="d-block">پیش‌نمایش تصویر جدید</label>
-                                        <img src="" alt="" id="new-image-preview" class="rounded border" style="max-height: 120px; max-width: 160px; object-fit: cover;">
-                                    </div>
-
-                                    <div class="form-group col-lg-6 col-12">
-                                        <label for="parent">دسته والد</label>
-                                        <select name="parent_id" class="form-control" id="parent">
-                                            <option value="">انتخاب کنید</option>
-                                            @foreach ($parents as $p)
-                                                <option value="{{ $p->id }}" @selected(old('parent_id', $category->parent_id ?? '') == $p->id)>
-                                                    {{ $p->title }}
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                        <img src="" alt="" id="tow-new-image-preview" class="rounded border" style="max-height: 120px; max-width: 160px; object-fit: cover;">
                                     </div>
 
                                     <div class="form-group col-lg-6 col-12 d-flex align-items-end">
                                         <div class="custom-control custom-switch custom-checkbox-success w-100">
-                                            <input name="status" type="checkbox" class="custom-control-input" id="category-status-switch" value="1" @checked($statusChecked)>
-                                            <label class="custom-control-label" for="category-status-switch">وضعیت دسته‌بندی (فعال)</label>
+                                            <input name="status" type="checkbox" class="custom-control-input" id="tow-status-switch" value="1" @checked($statusChecked)>
+                                            <label class="custom-control-label" for="tow-status-switch">وضعیت (فعال)</label>
                                         </div>
                                     </div>
 
                                     <div class="form-group col-12 mt-2">
                                         <small class="form-text text-muted d-block mb-2">در صورت اطمینان از صحت اطلاعات، ذخیره را بزنید.</small>
                                         <button type="submit" class="btn btn-primary pl-4 pr-4">
-                                            {{ $isEdit ? 'ذخیرهٔ تغییرات' : 'ثبت دسته' }}
+                                            {{ $isEdit ? 'ذخیرهٔ تغییرات' : 'ثبت' }}
                                         </button>
-                                        <a href="{{ route('admin.category.index') }}" class="btn btn-light mr-2">انصراف</a>
+                                        <a href="{{ route('admin.type-of-weights.index') }}" class="btn btn-light mr-2">انصراف</a>
                                     </div>
                                 </form>
                             </div>
@@ -151,11 +145,11 @@
 @push('scripts')
 <script>
     (function () {
-        var input = document.getElementById('category-image');
+        var input = document.getElementById('tow-image');
         if (!input) return;
         var label = input.nextElementSibling;
-        var previewWrap = document.getElementById('new-image-preview-wrap');
-        var previewImg = document.getElementById('new-image-preview');
+        var previewWrap = document.getElementById('tow-new-image-preview-wrap');
+        var previewImg = document.getElementById('tow-new-image-preview');
         input.addEventListener('change', function () {
             var file = this.files && this.files[0];
             if (label) {

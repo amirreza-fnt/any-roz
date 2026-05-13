@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Products;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Support\PublicUploads;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
@@ -49,7 +49,7 @@ class CategoryController extends Controller
 
         $image = null;
         if ($request->hasFile('image')) {
-            $image = $request->file('image')->store('images/category', 'public');
+            $image = PublicUploads::store($request->file('image'), 'images/category');
         }
 
         try {
@@ -114,7 +114,7 @@ class CategoryController extends Controller
 
         if ($request->hasFile('image')) {
             $this->deleteCategoryImage($category);
-            $category->image = $request->file('image')->store('images/category', 'public');
+            $category->image = PublicUploads::store($request->file('image'), 'images/category');
         }
 
         $category->title = $request->title;
@@ -178,8 +178,6 @@ class CategoryController extends Controller
 
     private function deleteCategoryImage(Category $category): void
     {
-        if ($category->image && Storage::disk('public')->exists($category->image)) {
-            Storage::disk('public')->delete($category->image);
-        }
+        PublicUploads::delete($category->image);
     }
 }

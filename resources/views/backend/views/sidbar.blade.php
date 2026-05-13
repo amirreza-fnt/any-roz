@@ -27,5 +27,19 @@
                 </li>
             </ul>
         </li>
+        <li class="{{ request()->routeIs('admin.type-of-weights.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="anchor"></i>
+                <span>انواع وزن</span>
+            </a>
+            <ul>
+                <li>
+                    <a class="{{ request()->routeIs('admin.type-of-weights.create') ? 'active' : '' }}" href="{{ route('admin.type-of-weights.create') }}">افزودن نوع وزن</a>
+                </li>
+                <li>
+                    <a class="{{ request()->routeIs('admin.type-of-weights.index') ? 'active' : '' }}" href="{{ route('admin.type-of-weights.index') }}">نمایش همه</a>
+                </li>
+            </ul>
+        </li>
     </ul>
 </div>
