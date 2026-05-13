@@ -21,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         foreach ([
+            public_path('uploads'),
             public_path('uploads/images/category'),
             public_path('uploads/images/type-of-weight'),
         ] as $dir) {
