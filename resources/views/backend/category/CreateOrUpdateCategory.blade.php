@@ -6,7 +6,11 @@
     $isEdit = $type === 'edit' && $category;
     $pageTitle = $isEdit ? 'ویرایش دسته‌بندی' : 'افزودن دسته‌بندی';
     $formAction = $isEdit ? route('admin.category.update', $category) : route('admin.category.store');
-    $statusChecked = old('status', $isEdit ? ($category->status === 'active' ? '1' : '0') : '1') === '1';
+    if (old('title') !== null || old('parent_id') !== null) {
+        $statusChecked = (bool) old('status');
+    } else {
+        $statusChecked = $isEdit ? $category->status === 'active' : true;
+    }
 @endphp
 
 <div class="main-content">
@@ -120,7 +124,6 @@
 
                                     <div class="form-group col-lg-6 col-12 d-flex align-items-end">
                                         <div class="custom-control custom-switch custom-checkbox-success w-100">
-                                            <input type="hidden" name="status" value="0">
                                             <input name="status" type="checkbox" class="custom-control-input" id="category-status-switch" value="1" @checked($statusChecked)>
                                             <label class="custom-control-label" for="category-status-switch">وضعیت دسته‌بندی (فعال)</label>
                                         </div>

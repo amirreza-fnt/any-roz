@@ -42,7 +42,10 @@ class CategoryController extends Controller
             'image' => 'nullable|image|max:4096',
         ]);
 
-        $status = $request->boolean('status') ? 'active' : 'inactive';
+        $status = 'active';
+        if (! $request->status) {
+            $status = 'inactive';
+        }
 
         $image = null;
         if ($request->hasFile('image')) {
@@ -104,7 +107,10 @@ class CategoryController extends Controller
             return redirect()->back()->withErrors(['parent_id' => 'انتخاب والد معتبر نیست (زیردستهٔ همین دسته قابل انتخاب نیست).'])->withInput();
         }
 
-        $status = $request->boolean('status') ? 'active' : 'inactive';
+        $status = 'active';
+        if (! $request->status) {
+            $status = 'inactive';
+        }
 
         if ($request->hasFile('image')) {
             $this->deleteCategoryImage($category);
