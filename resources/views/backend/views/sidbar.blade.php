@@ -55,5 +55,19 @@
                 </li>
             </ul>
         </li>
+        <li class="{{ request()->routeIs('admin.orders.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="file-text"></i>
+                <span>فاکتورها</span>
+            </a>
+            <ul>
+                <li>
+                    <a class="{{ request()->routeIs('admin.orders.index') ? 'active' : '' }}" href="{{ route('admin.orders.index') }}">همهٔ فاکتورها</a>
+                </li>
+                <li>
+                    <a class="{{ request()->routeIs('admin.orders.supply') ? 'active' : '' }}" href="{{ route('admin.orders.supply') }}">ارسال‌شده به تأمین</a>
+                </li>
+            </ul>
+        </li>
     </ul>
 </div>
