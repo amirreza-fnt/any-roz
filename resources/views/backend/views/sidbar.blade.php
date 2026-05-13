@@ -41,5 +41,19 @@
                 </li>
             </ul>
         </li>
+        <li class="{{ request()->routeIs('admin.products.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="package"></i>
+                <span>محصولات</span>
+            </a>
+            <ul>
+                <li>
+                    <a class="{{ request()->routeIs('admin.products.create') ? 'active' : '' }}" href="{{ route('admin.products.create') }}">افزودن محصول</a>
+                </li>
+                <li>
+                    <a class="{{ request()->routeIs('admin.products.index') ? 'active' : '' }}" href="{{ route('admin.products.index') }}">لیست محصولات</a>
+                </li>
+            </ul>
+        </li>
     </ul>
 </div>

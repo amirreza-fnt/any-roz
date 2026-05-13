@@ -19,4 +19,14 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::resource('category', App\Http\Controllers\Admin\Products\CategoryController::class);
 
     Route::resource('type-of-weights', App\Http\Controllers\Admin\Products\TypeOfWeightController::class);
+
+    Route::patch('products/{product}/toggle-status', [App\Http\Controllers\Admin\Products\ProductController::class, 'toggleStatus'])
+        ->name('products.toggle-status');
+    Route::patch('products/{product}/toggle-suggested', [App\Http\Controllers\Admin\Products\ProductController::class, 'toggleSuggested'])
+        ->name('products.toggle-suggested');
+    Route::post('products/{product}/images', [App\Http\Controllers\Admin\Products\ProductController::class, 'storeImage'])
+        ->name('products.images.store');
+    Route::delete('products/{product}/images/{product_image}', [App\Http\Controllers\Admin\Products\ProductController::class, 'destroyImage'])
+        ->name('products.images.destroy');
+    Route::resource('products', App\Http\Controllers\Admin\Products\ProductController::class);
 });

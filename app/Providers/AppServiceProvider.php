@@ -23,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
         foreach ([
             public_path('uploads'),
             public_path('uploads/images/category'),
+            public_path('uploads/images/product'),
         ] as $dir) {
             File::ensureDirectoryExists($dir);
         }

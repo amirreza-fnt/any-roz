@@ -15,14 +15,14 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->string('slug')->unique();
+            $table->string('tracking_code')->unique();
             $table->foreignId('category_id')->constrained('categories')->cascadeOnDelete();
-            $table->foreignId('weight_id')->constrained('type_of_weights')->cascadeOnDelete();
             $table->integer('price');
             $table->integer('price_buy');
             $table->integer('price_discounted');
             $table->integer('stock');
-            $table->enum('status',['active','inactive'])->default('active');
-            $table->enum('suggested',['active','inactive'])->default('inactive');
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->enum('suggested', ['active', 'inactive'])->default('inactive');
             $table->text('mini_description');
             $table->text('description');
             $table->timestamps();
