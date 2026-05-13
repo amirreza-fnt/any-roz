@@ -22,7 +22,7 @@ class TypeOfWeight extends Model
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'product_type_of_weight', 'type_of_weight_id', 'product_id')
-            ->withPivot('stock')
+            ->withPivot(['stock', 'price', 'price_buy', 'price_discounted'])
             ->withTimestamps();
     }
 }

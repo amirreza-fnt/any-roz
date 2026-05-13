@@ -13,6 +13,9 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
             $table->foreignId('type_of_weight_id')->constrained('type_of_weights')->cascadeOnDelete();
             $table->unsignedInteger('stock')->default(0);
+            $table->unsignedInteger('price')->default(0);
+            $table->unsignedInteger('price_buy')->default(0);
+            $table->unsignedInteger('price_discounted')->default(0);
             $table->timestamps();
 
             $table->unique(['product_id', 'type_of_weight_id']);

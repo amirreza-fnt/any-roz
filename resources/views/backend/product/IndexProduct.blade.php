@@ -63,7 +63,7 @@
                     <div class="card-body d-flex flex-wrap align-items-center justify-content-between">
                         <div>
                             <h6 class="card-title mb-1">مدیریت محصولات</h6>
-                            <p class="text-muted small mb-0">کد رهگیری، دسته، انواع وزن با موجودی جدا، تصاویر چندگانه و وضعیت‌ها.</p>
+                            <p class="text-muted small mb-0">ثابت یا تفکیک وزن با قیمت و موجودی جدا، تصاویر چندگانه و وضعیت‌ها.</p>
                         </div>
                         <a href="{{ route('admin.products.create') }}" class="btn btn-primary mt-2 mt-md-0">
                             <i data-feather="plus" class="width-16 height-16"></i>
@@ -105,13 +105,25 @@
                                             <td class="align-middle text-muted">{{ $p->category?->title ?? '—' }}</td>
                                             <td class="align-middle weight-tags text-muted">
                                                 @forelse ($p->typeOfWeights as $tw)
-                                                    <div><span class="text-dark">{{ $tw->title }}</span>: {{ number_format($tw->pivot->stock) }}</div>
+                                                    <div class="mb-1">
+                                                        <span class="text-dark font-weight-500">{{ $tw->title }}</span>
+                                                        <span class="d-block small">موجودی {{ number_format($tw->pivot->stock) }} — خرید {{ number_format($tw->pivot->price_buy) }} — فروش {{ number_format($tw->pivot->price_discounted) }}</span>
+                                                    </div>
                                                 @empty
-                                                    —
+                                                    <span class="text-muted">ثابت (بدون وزن)</span>
                                                 @endforelse
                                             </td>
                                             <td class="align-middle">{{ number_format($p->stock) }}</td>
-                                            <td class="align-middle">{{ number_format($p->price_discounted) }}</td>
+                                            <td class="align-middle">
+                                                @if ($p->typeOfWeights->isEmpty())
+                                                    {{ number_format($p->price_discounted) }}
+                                                @else
+                                                    @php
+                                                        $__minDisc = $p->typeOfWeights->map(fn ($tw) => (int) $tw->pivot->price_discounted)->min();
+                                                    @endphp
+                                                    <span class="small">از {{ number_format($__minDisc) }}</span>
+                                                @endif
+                                            </td>
                                             <td class="align-middle">
                                                 @if ($p->status === 'active')
                                                     <span class="status-pill status-pill-active">فعال</span>

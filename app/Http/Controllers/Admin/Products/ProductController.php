@@ -10,8 +10,10 @@ use App\Models\TypeOfWeight;
 use App\Support\PublicUploads;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -39,32 +41,33 @@ class ProductController extends Controller
         $slug = $this->resolveUniqueSlug($request->input('slug'), $request->input('title'));
         $trackingCode = $this->resolveUniqueTrackingCode($request->input('tracking_code'));
 
-        $syncData = $this->buildWeightSyncFromRequest($request);
-        if ($syncData instanceof \Illuminate\Http\RedirectResponse) {
-            return $syncData;
-        }
-
-        $sumStock = array_sum(array_column($syncData, 'stock'));
+        $variantRows = $this->collectVariantRows($request);
 
         $product = null;
         try {
-            DB::transaction(function () use ($request, $slug, $trackingCode, $syncData, $sumStock, &$product) {
+            DB::transaction(function () use ($request, $slug, $trackingCode, $variantRows, &$product) {
+                $payload = $this->buildProductPriceStockPayload($request, $variantRows);
+
                 $product = Product::create([
                     'title' => $request->title,
                     'slug' => $slug,
                     'tracking_code' => $trackingCode,
                     'category_id' => (int) $request->category_id,
-                    'price' => (int) $request->price,
-                    'price_buy' => (int) $request->price_buy,
-                    'price_discounted' => (int) $request->price_discounted,
-                    'stock' => $sumStock,
+                    'price' => $payload['price'],
+                    'price_buy' => $payload['price_buy'],
+                    'price_discounted' => $payload['price_discounted'],
+                    'stock' => $payload['stock'],
                     'status' => $request->status ? 'active' : 'inactive',
                     'suggested' => $request->suggested ? 'active' : 'inactive',
                     'mini_description' => $request->mini_description,
                     'description' => $request->description,
                 ]);
 
-                $product->typeOfWeights()->sync($this->syncPivotFormat($syncData));
+                if ($payload['has_variants']) {
+                    $product->typeOfWeights()->sync($variantRows);
+                } else {
+                    $product->typeOfWeights()->detach();
+                }
             });
 
             message('success', 'محصول با موفقیت ثبت شد.');
@@ -99,31 +102,32 @@ class ProductController extends Controller
         $slug = $this->resolveUniqueSlug($request->input('slug'), $request->input('title'), $product->id);
         $trackingCode = $this->resolveUniqueTrackingCode($request->input('tracking_code'), $product->id);
 
-        $syncData = $this->buildWeightSyncFromRequest($request);
-        if ($syncData instanceof \Illuminate\Http\RedirectResponse) {
-            return $syncData;
-        }
-
-        $sumStock = array_sum(array_column($syncData, 'stock'));
+        $variantRows = $this->collectVariantRows($request);
 
         try {
-            DB::transaction(function () use ($request, $product, $slug, $trackingCode, $syncData, $sumStock) {
+            DB::transaction(function () use ($request, $product, $slug, $trackingCode, $variantRows) {
+                $payload = $this->buildProductPriceStockPayload($request, $variantRows);
+
                 $product->update([
                     'title' => $request->title,
                     'slug' => $slug,
                     'tracking_code' => $trackingCode,
                     'category_id' => (int) $request->category_id,
-                    'price' => (int) $request->price,
-                    'price_buy' => (int) $request->price_buy,
-                    'price_discounted' => (int) $request->price_discounted,
-                    'stock' => $sumStock,
+                    'price' => $payload['price'],
+                    'price_buy' => $payload['price_buy'],
+                    'price_discounted' => $payload['price_discounted'],
+                    'stock' => $payload['stock'],
                     'status' => $request->status ? 'active' : 'inactive',
                     'suggested' => $request->suggested ? 'active' : 'inactive',
                     'mini_description' => $request->mini_description,
                     'description' => $request->description,
                 ]);
 
-                $product->typeOfWeights()->sync($this->syncPivotFormat($syncData));
+                if ($payload['has_variants']) {
+                    $product->typeOfWeights()->sync($variantRows);
+                } else {
+                    $product->typeOfWeights()->detach();
+                }
             });
 
             message('success', 'محصول به‌روزرسانی شد.');
@@ -224,57 +228,95 @@ class ProductController extends Controller
             'slug' => ['nullable', 'string', 'max:255', $slugRule],
             'tracking_code' => ['nullable', 'string', 'max:64', $trackingRule],
             'category_id' => 'required|exists:categories,id',
-            'price' => 'required|integer|min:0',
-            'price_buy' => 'required|integer|min:0',
-            'price_discounted' => 'required|integer|min:0',
             'mini_description' => 'required|string',
             'description' => 'required|string',
         ]);
+
+        $weightIds = array_values(array_unique(array_filter(array_map('intval', (array) $request->input('weight_type_ids', [])))));
+
+        if (count($weightIds) === 0) {
+            Validator::make($request->all(), [
+                'price' => 'required|integer|min:0',
+                'price_buy' => 'required|integer|min:0',
+                'price_discounted' => 'required|integer|min:0',
+                'stock' => 'required|integer|min:0',
+            ])->validate();
+
+            return;
+        }
+
+        $existingIds = TypeOfWeight::whereIn('id', $weightIds)->pluck('id')->all();
+        if (count($existingIds) !== count($weightIds)) {
+            throw ValidationException::withMessages([
+                'weight_type_ids' => 'یکی از انواع وزن انتخاب‌شده معتبر نیست.',
+            ]);
+        }
+
+        $rules = [];
+        foreach ($weightIds as $id) {
+            foreach (['stock', 'price', 'price_buy', 'price_discounted'] as $field) {
+                $rules['weights.'.$id.'.'.$field] = 'required|integer|min:0';
+            }
+        }
+
+        Validator::make($request->all(), $rules)->validate();
     }
 
     /**
-     * @return array<int, array{stock:int}>|\Illuminate\Http\RedirectResponse
+     * @return array<int, array<string, int>>
      */
-    private function buildWeightSyncFromRequest(Request $request)
+    private function collectVariantRows(Request $request): array
     {
-        $ids = $request->input('weight_type_ids', []);
-        if (! is_array($ids) || count($ids) < 1) {
-            return redirect()->back()->withErrors(['weight_type_ids' => 'حداقل یک نوع وزن انتخاب کنید.'])->withInput();
-        }
+        $weightIds = array_values(array_unique(array_filter(array_map('intval', (array) $request->input('weight_type_ids', [])))));
 
-        $ids = array_unique(array_map('intval', $ids));
-        $validIds = TypeOfWeight::whereIn('id', $ids)->pluck('id')->all();
-        if (count($validIds) !== count($ids)) {
-            return redirect()->back()->withErrors(['weight_type_ids' => 'نوع وزن انتخاب‌شده معتبر نیست.'])->withInput();
+        if (count($weightIds) === 0) {
+            return [];
         }
 
         $weights = $request->input('weights', []);
-        $sync = [];
-        foreach ($ids as $id) {
-            if (! isset($weights[$id]['stock']) && ! isset($weights[(string) $id]['stock'])) {
-                return redirect()->back()->withErrors(["weights.$id.stock" => 'موجودی برای همهٔ انواع وزن الزامی است.'])->withInput();
-            }
-            $stock = (int) ($weights[$id]['stock'] ?? $weights[(string) $id]['stock'] ?? -1);
-            if ($stock < 0) {
-                return redirect()->back()->withErrors(["weights.$id.stock" => 'موجودی نامعتبر است.'])->withInput();
-            }
-            $sync[$id] = ['stock' => $stock];
+        $rows = [];
+
+        foreach ($weightIds as $id) {
+            $w = $weights[$id] ?? $weights[(string) $id] ?? [];
+            $rows[$id] = [
+                'stock' => (int) ($w['stock'] ?? 0),
+                'price' => (int) ($w['price'] ?? 0),
+                'price_buy' => (int) ($w['price_buy'] ?? 0),
+                'price_discounted' => (int) ($w['price_discounted'] ?? 0),
+            ];
         }
 
-        return $sync;
+        return $rows;
     }
 
     /**
-     * @param  array<int, array{stock:int}>  $syncData
+     * @param  array<int, array<string, int>>  $variantRows
+     * @return array{price: int, price_buy: int, price_discounted: int, stock: int, has_variants: bool}
      */
-    private function syncPivotFormat(array $syncData): array
+    private function buildProductPriceStockPayload(Request $request, array $variantRows): array
     {
-        $out = [];
-        foreach ($syncData as $id => $row) {
-            $out[$id] = ['stock' => $row['stock']];
+        if (count($variantRows) === 0) {
+            return [
+                'has_variants' => false,
+                'price' => (int) $request->price,
+                'price_buy' => (int) $request->price_buy,
+                'price_discounted' => (int) $request->price_discounted,
+                'stock' => (int) $request->stock,
+            ];
         }
 
-        return $out;
+        $stocks = array_column($variantRows, 'stock');
+        $prices = array_column($variantRows, 'price');
+        $buys = array_column($variantRows, 'price_buy');
+        $discounted = array_column($variantRows, 'price_discounted');
+
+        return [
+            'has_variants' => true,
+            'price' => (int) min($prices),
+            'price_buy' => (int) min($buys),
+            'price_discounted' => (int) min($discounted),
+            'stock' => (int) array_sum($stocks),
+        ];
     }
 
     private function resolveUniqueSlug(?string $slugInput, string $title, ?int $ignoreId = null): string
