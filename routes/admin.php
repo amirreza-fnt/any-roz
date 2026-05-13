@@ -16,6 +16,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::get('dashboard', App\Http\Controllers\Admin\Dashboard::class)->name('dashboard');
     Route::get('dashboard/accounting', App\Http\Controllers\Admin\DashboardAccounting::class)->name('dashboard.accounting');
     Route::get('dashboard/supply', App\Http\Controllers\Admin\DashboardSupply::class)->name('dashboard.supply');
+    Route::get('dashboard/marketing', App\Http\Controllers\Admin\DashboardMarketing::class)->name('dashboard.marketing');
     Route::patch('category/{category}/toggle-status', [App\Http\Controllers\Admin\Products\CategoryController::class, 'toggleStatus'])
         ->name('category.toggle-status');
     Route::resource('category', App\Http\Controllers\Admin\Products\CategoryController::class);
@@ -32,6 +33,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         ->name('products.images.destroy');
     Route::resource('products', App\Http\Controllers\Admin\Products\ProductController::class);
 
+    Route::get('orders/supply/{order}', [App\Http\Controllers\Admin\Orders\OrderController::class, 'showSupply'])->name('orders.supply.show');
     Route::get('orders/supply', [App\Http\Controllers\Admin\Orders\OrderController::class, 'supplyIndex'])->name('orders.supply');
     Route::get('orders', [App\Http\Controllers\Admin\Orders\OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [App\Http\Controllers\Admin\Orders\OrderController::class, 'show'])->name('orders.show');
@@ -56,4 +58,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::patch('shipping-configs/{shipping_config}/toggle-status', [App\Http\Controllers\Admin\Shipping\ShippingConfigController::class, 'toggleStatus'])
         ->name('shipping-configs.toggle-status');
     Route::resource('shipping-configs', App\Http\Controllers\Admin\Shipping\ShippingConfigController::class)->except(['destroy']);
+
+    Route::get('technical-backup', [App\Http\Controllers\Admin\Tools\TechnicalBackupController::class, 'index'])->name('technical-backup.index');
+    Route::post('technical-backup/download', [App\Http\Controllers\Admin\Tools\TechnicalBackupController::class, 'download'])->name('technical-backup.download');
+
+    Route::resource('users', App\Http\Controllers\Admin\Users\UserController::class);
 });

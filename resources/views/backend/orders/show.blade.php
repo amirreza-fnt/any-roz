@@ -1,5 +1,17 @@
 @extends('backend.views.view')
 
+@php
+    $hideFinancials = $hideFinancials ?? false;
+    $listBackRoute = $listBackRoute ?? route('admin.orders.index');
+    $payClass = match($order->payment_status) {
+        'pending' => 'inv-pay-pending',
+        'paid' => 'inv-pay-paid',
+        'failed' => 'inv-pay-failed',
+        'refunded' => 'inv-pay-refunded',
+        default => 'inv-pay-pending',
+    };
+@endphp
+
 @push('styles')
 <style>
     :root {
@@ -31,6 +43,7 @@
         max-width: 980px;
         margin: 0 auto;
     }
+    .invoice-sheet.is-supply-view .supply-hide-print { display: none !important; }
     .invoice-hero {
         background: linear-gradient(120deg, #312e81 0%, #4f46e5 45%, #6366f1 100%);
         color: #fff;
@@ -67,6 +80,9 @@
         font-weight: 700;
         color: #3730a3;
     }
+    .invoice-sheet.is-supply-view .inv-products-head {
+        grid-template-columns: 56px 1fr 80px;
+    }
     @media (min-width: 768px) {
         .inv-products-head { display: grid; }
     }
@@ -78,6 +94,9 @@
         align-items: center;
         border-top: 1px solid var(--inv-line);
         font-size: .86rem;
+    }
+    .invoice-sheet.is-supply-view .inv-line {
+        grid-template-columns: 56px 1fr 80px;
     }
     .inv-line:nth-child(even) { background: #fafafa; }
     .inv-thumb {
@@ -107,22 +126,13 @@
         #main { margin: 0 !important; padding: 0 !important; }
         .main-content { padding: 0 !important; }
         .invoice-sheet { box-shadow: none !important; border: none !important; max-width: 100% !important; }
+        .invoice-sheet.is-supply-view .supply-hide-print { display: none !important; }
         body { background: #fff !important; }
     }
 </style>
 @endpush
 
 @section('main')
-
-@php
-    $payClass = match($order->payment_status) {
-        'pending' => 'inv-pay-pending',
-        'paid' => 'inv-pay-paid',
-        'failed' => 'inv-pay-failed',
-        'refunded' => 'inv-pay-refunded',
-        default => 'inv-pay-pending',
-    };
-@endphp
 
 <div class="main-content">
     <div class="container">
@@ -132,7 +142,7 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">خانه</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.orders.index') }}">فاکتورها</a></li>
+                    <li class="breadcrumb-item"><a href="{{ $listBackRoute }}">فاکتورها</a></li>
                     <li class="breadcrumb-item active" aria-current="page">{{ $order->order_number }}</li>
                 </ol>
             </nav>
@@ -140,7 +150,7 @@
 
         <div class="no-print inv-toolbar">
             <div class="d-flex flex-wrap gap-2 align-items-center">
-                <a href="{{ route('admin.orders.index') }}" class="btn btn-light">بازگشت به لیست</a>
+                <a href="{{ $listBackRoute }}" class="btn btn-light">بازگشت به لیست</a>
                 <button type="button" class="btn btn-primary" onclick="window.print()">
                     <i data-feather="printer" class="width-16 height-16"></i>
                     <span class="mr-1">چاپ فاکتور</span>
@@ -190,7 +200,7 @@
             </div>
         </div>
 
-        <div id="invoice-print" class="invoice-sheet mb-5">
+        <div id="invoice-print" class="invoice-sheet mb-5 {{ $hideFinancials ? 'is-supply-view' : '' }}">
             <div class="invoice-hero">
                 <h1>فاکتور فروش</h1>
                 <div class="sub d-flex flex-wrap gap-3">
@@ -206,6 +216,9 @@
                         <div class="inv-kv">
                             <div><strong>{{ $order->user?->name ?? '—' }}</strong></div>
                             <div class="text-muted small">{{ $order->user?->email }}</div>
+                            @if ($order->user?->mobile)
+                                <div class="text-muted small text-monospace" dir="ltr">{{ $order->user->mobile }}</div>
+                            @endif
                         </div>
                     </div>
                     <div class="inv-card">
@@ -223,7 +236,7 @@
                             @endif
                         </div>
                     </div>
-                    <div class="inv-card">
+                    <div class="inv-card supply-hide-print">
                         <h3>جمع مالی</h3>
                         <div class="inv-kv">
                             <div>جمع کالا: {{ number_format((float) $order->total_amount) }} تومان</div>
@@ -261,9 +274,9 @@
                         <span></span>
                         <span>کالا</span>
                         <span class="text-center">تعداد</span>
-                        <span class="text-left">قیمت واحد</span>
-                        <span class="text-left">تخفیف</span>
-                        <span class="text-left">جمع سطر</span>
+                        <span class="text-left supply-hide-print">قیمت واحد</span>
+                        <span class="text-left supply-hide-print">تخفیف</span>
+                        <span class="text-left supply-hide-print">جمع سطر</span>
                     </div>
                     @foreach ($order->items as $line)
                         <div class="inv-line">
@@ -286,14 +299,14 @@
                                 @endif
                             </div>
                             <div class="cell-qty text-center font-weight-600">{{ number_format($line->quantity) }}</div>
-                            <div class="cell-unit">{{ $line->unit_price }}</div>
-                            <div class="cell-disc small">{{ $line->discount_percent }}٪ — {{ number_format($line->discount_amount) }}</div>
-                            <div class="cell-final font-weight-bold">{{ number_format($line->final_price) }} <span class="text-muted small font-weight-normal">تومان</span></div>
+                            <div class="cell-unit supply-hide-print">{{ $line->unit_price }}</div>
+                            <div class="cell-disc small supply-hide-print">{{ $line->discount_percent }}٪ — {{ number_format($line->discount_amount) }}</div>
+                            <div class="cell-final font-weight-bold supply-hide-print">{{ number_format($line->final_price) }} <span class="text-muted small font-weight-normal">تومان</span></div>
                         </div>
                     @endforeach
                 </div>
 
-                <div class="inv-totals">
+                <div class="inv-totals supply-hide-print">
                     <div class="inv-totals-inner">
                         <div class="inv-totals-row"><span>جمع کالاها</span><span>{{ number_format((float) $order->total_amount) }}</span></div>
                         <div class="inv-totals-row"><span>هزینه ارسال (کارمزد)</span><span>{{ number_format((float) $order->shipping_fee) }}</span></div>

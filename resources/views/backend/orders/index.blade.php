@@ -1,5 +1,10 @@
 @extends('backend.views.view')
 
+@php
+    $dateColIndex = $supplyMode ? 6 : 7;
+    $nonOrderableTargets = $supplyMode ? '[3, 7]' : '[4, 8]';
+@endphp
+
 @push('styles')
 <link rel="stylesheet" href="{{ asset('assets/back-end/vendors/dataTable/dataTables.min.css') }}" type="text/css">
 <style>
@@ -13,6 +18,8 @@
     .orders-toolbar .btn { border-radius: 10px; }
     #orders-table_wrapper .dataTables_filter input { margin-right: 0.5rem; border-radius: 8px; min-width: 220px; }
     .mini-form-status .form-control { min-width: 140px; }
+    .table-actions .btn { padding: .35rem .45rem; margin: 0 .1rem; }
+    .table-actions form { display: inline-block; }
 </style>
 @endpush
 
@@ -32,12 +39,12 @@
         </div>
 
         @if (! $supplyMode)
-            <p class="text-muted small mb-3">برای مدیریت فاکتورهای ارسال‌شده به تأمین، از «داشبورد تأمین» در منوی کناری استفاده کنید.</p>
+            <p class="text-muted small mb-3">برای فاکتورهای ارسال‌شده به تأمین، از «داشبورد تأمین» در منو استفاده کنید (همان لیست تأمین).</p>
         @endif
 
         @if ($supplyMode)
         <div class="alert alert-info border-0 shadow-sm d-flex flex-wrap align-items-center justify-content-between gap-2">
-            <span>این لیست فقط فاکتورهای ارسال‌شده به بخش تأمین را نشان می‌دهد.</span>
+            <span>این لیست فقط فاکتورهای ارسال‌شده به بخش تأمین را نشان می‌دهد. مبالغ مالی در این بخش نمایش داده نمی‌شود.</span>
             <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-outline-primary">مشاهدهٔ همهٔ فاکتورها</a>
         </div>
         @endif
@@ -50,13 +57,15 @@
                             <tr>
                                 <th>شماره سفارش</th>
                                 <th>خریدار</th>
-                                <th>مبلغ نهایی</th>
+                                @unless ($supplyMode)
+                                    <th>مبلغ نهایی</th>
+                                @endunless
                                 <th>پرداخت</th>
                                 <th style="min-width:220px">وضعیت سفارش</th>
                                 <th>کد رهگیری پست</th>
                                 <th>تأمین</th>
                                 <th>تاریخ</th>
-                                <th style="min-width:120px">عملیات</th>
+                                <th style="min-width:160px">عملیات</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -67,7 +76,9 @@
                                         <div class="font-weight-500">{{ $o->user?->name ?? '—' }}</div>
                                         <div class="small text-muted">{{ $o->user?->email }}</div>
                                     </td>
-                                    <td class="align-middle">{{ number_format((float) $o->final_amount) }} <span class="text-muted small">تومان</span></td>
+                                    @unless ($supplyMode)
+                                        <td class="align-middle">{{ number_format((float) $o->final_amount) }} <span class="text-muted small">تومان</span></td>
+                                    @endunless
                                     <td class="align-middle">
                                         @php $pc = match($o->payment_status) { 'pending' => 'inv-pay-pending', 'paid' => 'inv-pay-paid', 'failed' => 'inv-pay-failed', 'refunded' => 'inv-pay-refunded', default => 'inv-pay-pending' }; @endphp
                                         <span class="inv-badge {{ $pc }}">{{ \App\Models\Order::paymentStatusLabel($o->payment_status) }}</span>
@@ -97,15 +108,28 @@
                                         @endif
                                     </td>
                                     <td class="align-middle small text-muted">{{ $o->created_at?->format('Y/m/d H:i') }}</td>
-                                    <td class="align-middle text-nowrap">
-                                        <a href="{{ route('admin.orders.show', $o) }}" class="btn btn-sm btn-outline-primary" title="جزئیات و چاپ">
-                                            <i data-feather="file-text" class="width-16 height-16"></i>
-                                        </a>
+                                    <td class="align-middle text-nowrap table-actions">
+                                        @if ($supplyMode)
+                                            <a href="{{ route('admin.orders.supply.show', $o) }}" class="btn btn-sm btn-outline-primary" title="جزئیات و چاپ">
+                                                <i data-feather="file-text" class="width-16 height-16"></i>
+                                            </a>
+                                        @else
+                                            <a href="{{ route('admin.orders.show', $o) }}" class="btn btn-sm btn-outline-primary" title="جزئیات و چاپ">
+                                                <i data-feather="file-text" class="width-16 height-16"></i>
+                                            </a>
+                                            @if ($o->sent_to_supply)
+                                                <form action="{{ route('admin.orders.toggle-supply', $o) }}" method="post" class="d-inline" onsubmit="return confirm('فاکتور از بخش تأمین بازگردانده شود؟');">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="btn btn-sm btn-outline-warning" title="بازگردانی از تأمین">بازگردانی</button>
+                                                </form>
+                                            @endif
+                                        @endif
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" class="text-center text-muted py-5">فاکتوری برای نمایش وجود ندارد.</td>
+                                    <td colspan="{{ $supplyMode ? 8 : 9 }}" class="text-center text-muted py-5">فاکتوری برای نمایش وجود ندارد.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -127,7 +151,7 @@
         @if ($orders->isNotEmpty())
         $('#orders-table').DataTable({
             responsive: true,
-            order: [[7, 'desc']],
+            order: [[{{ $dateColIndex }}, 'desc']],
             pageLength: 25,
             language: {
                 search: 'جستجو:',
@@ -138,7 +162,7 @@
                 paginate: { previous: 'قبلی', next: 'بعدی' }
             },
             columnDefs: [
-                { orderable: false, targets: [4, 8] }
+                { orderable: false, targets: {{ $nonOrderableTargets }} }
             ],
             drawCallback: function () {
                 if (typeof feather !== 'undefined') feather.replace();

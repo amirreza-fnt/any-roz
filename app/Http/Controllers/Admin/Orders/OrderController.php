@@ -42,9 +42,26 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['user', 'items.product', 'histories.user']);
+        return $this->renderOrderView($order, false);
+    }
 
-        return view('backend.orders.show', compact('order'));
+    public function showSupply(Order $order)
+    {
+        if (! $order->sent_to_supply) {
+            abort(404);
+        }
+
+        return $this->renderOrderView($order, true);
+    }
+
+    private function renderOrderView(Order $order, bool $hideFinancials)
+    {
+        $order->load(['user', 'items.product', 'histories.user']);
+        $listBackRoute = $hideFinancials
+            ? route('admin.orders.supply')
+            : route('admin.orders.index');
+
+        return view('backend.orders.show', compact('order', 'hideFinancials', 'listBackRoute'));
     }
 
     public function updateStatus(Request $request, Order $order)

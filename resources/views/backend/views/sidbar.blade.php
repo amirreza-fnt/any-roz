@@ -14,7 +14,13 @@
             </a>
         </li>
         <li>
-            <a class="{{ request()->routeIs('admin.dashboard.supply') ? 'active' : '' }}" href="{{ route('admin.dashboard.supply') }}">
+            <a class="{{ request()->routeIs('admin.dashboard.marketing') ? 'active' : '' }}" href="{{ route('admin.dashboard.marketing') }}">
+                <i class="nav-link-icon" data-feather="trending-up"></i>
+                <span>داشبورد بازاریابی</span>
+            </a>
+        </li>
+        <li>
+            <a class="{{ request()->routeIs('admin.orders.supply') || request()->routeIs('admin.orders.supply.show') ? 'active' : '' }}" href="{{ route('admin.orders.supply') }}">
                 <i class="nav-link-icon" data-feather="truck"></i>
                 <span>داشبورد تأمین</span>
             </a>
@@ -69,6 +75,20 @@
             <ul>
                 <li>
                     <a class="{{ request()->routeIs('admin.orders.index') ? 'active' : '' }}" href="{{ route('admin.orders.index') }}">همهٔ فاکتورها</a>
+                </li>
+            </ul>
+        </li>
+        <li class="{{ request()->routeIs('admin.users.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="users"></i>
+                <span>کاربران</span>
+            </a>
+            <ul>
+                <li>
+                    <a class="{{ request()->routeIs('admin.users.create') ? 'active' : '' }}" href="{{ route('admin.users.create') }}">افزودن کاربر</a>
+                </li>
+                <li>
+                    <a class="{{ request()->routeIs('admin.users.index') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">لیست کاربران</a>
                 </li>
             </ul>
         </li>
@@ -133,6 +153,12 @@
                     <a class="{{ request()->routeIs('admin.shipping-configs.index') ? 'active' : '' }}" href="{{ route('admin.shipping-configs.index') }}">لیست روش‌ها</a>
                 </li>
             </ul>
+        </li>
+        <li>
+            <a class="{{ request()->routeIs('admin.technical-backup.*') ? 'active' : '' }}" href="{{ route('admin.technical-backup.index') }}">
+                <i class="nav-link-icon" data-feather="download"></i>
+                <span>پشتیبان‌گیری فنی</span>
+            </a>
         </li>
     </ul>
 </div>
