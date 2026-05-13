@@ -14,5 +14,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::get('dashboard', App\Http\Controllers\Admin\Dashboard::class)->name('dashboard');
+    Route::patch('category/{category}/toggle-status', [App\Http\Controllers\Admin\Products\CategoryController::class, 'toggleStatus'])
+        ->name('category.toggle-status');
     Route::resource('category', App\Http\Controllers\Admin\Products\CategoryController::class);
 });

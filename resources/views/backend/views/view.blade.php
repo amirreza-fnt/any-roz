@@ -4,6 +4,7 @@
     @include('backend.views.meta')
     <title>پنل مدیریت</title>
     @include('backend.views.links')
+    @stack('styles')
 </head>
 <body>
 <!-- begin::preloader-->
@@ -38,5 +39,6 @@
 
 <!-- Plugin scripts -->
 @include('backend.views.scripts')
+@stack('scripts')
 </body>
 </html>

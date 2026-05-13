@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Admin\Products;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Category;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
@@ -13,7 +14,9 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        dd('index');
+        $categories = Category::with('parent')->orderByDesc('id')->get();
+
+        return view('backend.category.IndexCategory', compact('categories'));
     }
 
     /**
@@ -22,7 +25,10 @@ class CategoryController extends Controller
     public function create()
     {
         $type = 'create';
-        return view('backend.category.CreateOrUpdateCategory',compact('type'));
+        $category = null;
+        $parents = Category::orderBy('title')->get();
+
+        return view('backend.category.CreateOrUpdateCategory', compact('type', 'category', 'parents'));
     }
 
     /**
@@ -30,71 +36,144 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $validate = $request->validate([
-            'title' => 'required|max:255',
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'parent_id' => 'nullable|exists:categories,id',
+            'image' => 'nullable|image|max:4096',
         ]);
 
-        $status = 'active';
-        if(!$request->status){
-            $status = 'inactive';
-        }
+        $status = $request->boolean('status') ? 'active' : 'inactive';
 
         $image = null;
-         if ($request->hasFile('image')) {
-            // این خط فایل را در پوشه storage/app/public/images ذخیره می‌کند
-            // و نام فایل را به صورت تصادفی (مثلا abc123.jpg) تولید می‌کند
-            $path = $request->file('image')->store('images/category', 'public');
-
-            // اگر می‌خواهید آدرس عمومی (URL) را داشته باشید:
-            // $publicUrl = asset('storage/' . $path);
-            $image = $path;
+        if ($request->hasFile('image')) {
+            $image = $request->file('image')->store('images/category', 'public');
         }
-        dd($image);
-            
-        try{
-            $category = Category::create([
+
+        try {
+            Category::create([
                 'title' => $request->title,
                 'status' => $status,
                 'image' => $image,
-                'parent_id' => $request->parent_id,
+                'parent_id' => $request->filled('parent_id') ? (int) $request->parent_id : null,
             ]);
-            message('success','درج با موفقیت انجام شد.');
-            return redirect()->back();
-        }catch(\Exception $e){
-            message('error','درج با خطا مواجه شد.');
-            return redirect()->back();
+            message('success', 'درج با موفقیت انجام شد.');
+
+            return redirect()->route('admin.category.index');
+        } catch (\Exception $e) {
+            message('error', 'درج با خطا مواجه شد.');
+
+            return redirect()->back()->withInput();
         }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Category $category)
     {
-        dd('show');
+        return redirect()->route('admin.category.edit', $category);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Category $category)
     {
-        dd('edit');
+        $type = 'edit';
+        $parents = Category::where('id', '!=', $category->id)->orderBy('title')->get();
+
+        return view('backend.category.CreateOrUpdateCategory', compact('type', 'category', 'parents'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Category $category)
     {
-        dd('update');
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'parent_id' => 'nullable|exists:categories,id',
+            'image' => 'nullable|image|max:4096',
+        ]);
+
+        if ($request->filled('parent_id') && (int) $request->parent_id === (int) $category->id) {
+            return redirect()->back()->withErrors(['parent_id' => 'دسته نمی‌تواند والد خودش باشد.'])->withInput();
+        }
+
+        if ($request->filled('parent_id') && $this->wouldCreateCycle($category, (int) $request->parent_id)) {
+            return redirect()->back()->withErrors(['parent_id' => 'انتخاب والد معتبر نیست (زیردستهٔ همین دسته قابل انتخاب نیست).'])->withInput();
+        }
+
+        $status = $request->boolean('status') ? 'active' : 'inactive';
+
+        if ($request->hasFile('image')) {
+            $this->deleteCategoryImage($category);
+            $category->image = $request->file('image')->store('images/category', 'public');
+        }
+
+        $category->title = $request->title;
+        $category->status = $status;
+        $category->parent_id = $request->filled('parent_id') ? (int) $request->parent_id : null;
+
+        try {
+            $category->save();
+            message('success', 'ویرایش با موفقیت انجام شد.');
+
+            return redirect()->route('admin.category.index');
+        } catch (\Exception $e) {
+            message('error', 'ویرایش با خطا مواجه شد.');
+
+            return redirect()->back()->withInput();
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Category $category)
     {
-        dd('destroy');
+        try {
+            if ($category->children()->exists()) {
+                message('error', 'ابتدا زیردسته‌های این دسته را حذف یا منتقل کنید.');
+
+                return redirect()->back();
+            }
+            $this->deleteCategoryImage($category);
+            $category->delete();
+            message('success', 'حذف با موفقیت انجام شد.');
+        } catch (\Exception $e) {
+            message('error', 'حذف با خطا مواجه شد.');
+        }
+
+        return redirect()->route('admin.category.index');
+    }
+
+    public function toggleStatus(Category $category)
+    {
+        $category->status = $category->status === 'active' ? 'inactive' : 'active';
+        $category->save();
+        message('success', 'وضعیت دسته به‌روزرسانی شد.');
+
+        return redirect()->back();
+    }
+
+    private function wouldCreateCycle(Category $category, int $newParentId): bool
+    {
+        $ancestor = Category::find($newParentId);
+        while ($ancestor) {
+            if ($ancestor->id === $category->id) {
+                return true;
+            }
+            $ancestor = $ancestor->parent_id ? Category::find($ancestor->parent_id) : null;
+        }
+
+        return false;
+    }
+
+    private function deleteCategoryImage(Category $category): void
+    {
+        if ($category->image && Storage::disk('public')->exists($category->image)) {
+            Storage::disk('public')->delete($category->image);
+        }
     }
 }
