@@ -202,8 +202,8 @@ class AccountingAnalyticsService
                 $join->on('p.id', '=', 'op.product_id')
                     ->whereNull('p.deleted_at');
             })
-            ->whereRaw($ev.' >= ?', [$from->copy()->startOfDay()])
-            ->whereRaw($ev.' <= ?', [$to->copy()->endOfDay()])
+            ->whereRaw('DATE('.$ev.') >= ?', [$from->copy()->startOfDay()->toDateString()])
+            ->whereRaw('DATE('.$ev.') <= ?', [$to->copy()->endOfDay()->toDateString()])
             ->where('o.shipping_status', '!=', Order::STATUS_CANCELLED);
 
         if ($sourceFilter !== null) {
@@ -297,7 +297,7 @@ class AccountingAnalyticsService
         $ev = $this->sqlOrderAccountingEventDatetime('payment_date', 'created_at');
 
         $q = Order::query()
-            ->whereRaw($ev.' >= ?', [$from])
+            ->whereRaw('DATE('.$ev.') >= ?', [$from->toDateString()])
             ->where('shipping_status', '!=', Order::STATUS_CANCELLED);
 
         if ($sourceFilter !== null) {
@@ -360,7 +360,7 @@ class AccountingAnalyticsService
         $this->applyAccountingDateBetween($base, $from, $to);
 
         $total = (float) (clone $base)->sum('final_amount');
-        $mkt = (float) (clone $base)->where('source', Order::SOURCE_MARKETING)->sum('final_amount');
+        $mkt = (float) (clone $base)->marketingChannelAccounting()->sum('final_amount');
         $site = (float) (clone $base)->siteChannelAccounting()->sum('final_amount');
 
         return ['site' => $site, 'marketing' => $mkt, 'total' => $total];
@@ -394,8 +394,8 @@ class AccountingAnalyticsService
     private function applyAccountingDateBetween(Builder $q, Carbon $from, Carbon $to): void
     {
         $ev = $this->sqlOrderAccountingEventDatetime('payment_date', 'created_at');
-        $q->whereRaw($ev.' >= ?', [$from->copy()->startOfDay()])
-            ->whereRaw($ev.' <= ?', [$to->copy()->endOfDay()]);
+        $q->whereRaw('DATE('.$ev.') >= ?', [$from->toDateString()])
+            ->whereRaw('DATE('.$ev.') <= ?', [$to->toDateString()]);
     }
 
     /**
@@ -417,11 +417,24 @@ class AccountingAnalyticsService
             return;
         }
         if ($sourceFilter === Order::SOURCE_SITE) {
-            $q->where(function ($w) use ($column) {
-                $w->where($column, Order::SOURCE_SITE)
-                    ->orWhereNull($column)
-                    ->orWhere($column, '');
-            });
+            if (Schema::hasColumn('orders', 'marketing_sale_id')) {
+                $q->whereNull('o.marketing_sale_id');
+            } else {
+                $q->where(function ($w) use ($column) {
+                    $w->whereNull($column)
+                        ->orWhere($column, '')
+                        ->orWhere($column, Order::SOURCE_SITE);
+                });
+            }
+
+            return;
+        }
+        if ($sourceFilter === Order::SOURCE_MARKETING) {
+            if (Schema::hasColumn('orders', 'marketing_sale_id')) {
+                $q->whereNotNull('o.marketing_sale_id');
+            } else {
+                $q->where($column, Order::SOURCE_MARKETING);
+            }
 
             return;
         }
@@ -435,6 +448,11 @@ class AccountingAnalyticsService
         }
         if ($sourceFilter === Order::SOURCE_SITE) {
             $q->siteChannelAccounting();
+
+            return;
+        }
+        if ($sourceFilter === Order::SOURCE_MARKETING) {
+            $q->marketingChannelAccounting();
 
             return;
         }

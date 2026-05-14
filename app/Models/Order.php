@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Schema;
 
 class Order extends Model
 {
@@ -119,14 +120,42 @@ class Order extends Model
         return $created;
     }
 
-    /** فاکتورهای کانال سایت (شامل رکوردهای قدیمی بدون فیلد منبع). */
+    /**
+     * فاکتورهای کانال سایت: هر سفارشی که از مسیر «تأیید فروش بازاریاب» ساخته نشده باشد
+     * (ستون marketing_sale_id فقط برای آن فاکتورها پر می‌شود).
+     */
     public function scopeSiteChannelAccounting(Builder $query): Builder
     {
-        return $query->where(function ($w) {
-            $w->where('source', self::SOURCE_SITE)
-                ->orWhereNull('source')
-                ->orWhere('source', '');
-        });
+        $table = $query->getModel()->getTable();
+        if (Schema::hasColumn($table, 'marketing_sale_id')) {
+            return $query->whereNull('marketing_sale_id');
+        }
+
+        if (Schema::hasColumn($table, 'source')) {
+            return $query->where(function ($w) {
+                $w->whereNull('source')
+                    ->orWhere('source', '')
+                    ->orWhereRaw('LOWER(TRIM(source)) = ?', [self::SOURCE_SITE])
+                    ->orWhereRaw('LOWER(TRIM(COALESCE(source, ?))) <> ?', ['', self::SOURCE_MARKETING]);
+            });
+        }
+
+        return $query;
+    }
+
+    /** فاکتورهای ناشی از بازاریابی (تأیید شده و ثبت در فاکتور). */
+    public function scopeMarketingChannelAccounting(Builder $query): Builder
+    {
+        $table = $query->getModel()->getTable();
+        if (Schema::hasColumn($table, 'marketing_sale_id')) {
+            return $query->whereNotNull('marketing_sale_id');
+        }
+
+        if (Schema::hasColumn($table, 'source')) {
+            return $query->whereRaw('LOWER(TRIM(COALESCE(source, ?))) = ?', ['', self::SOURCE_MARKETING]);
+        }
+
+        return $query->whereRaw('0 = 1');
     }
 
     public function user(): BelongsTo
