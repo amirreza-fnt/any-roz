@@ -1,6 +1,6 @@
 <footer>
     <div class="container">
-        <div>ارائه شده در وب‌سایت <a href="https://www.rtl-theme.com/" target="_blank">راست‌چین</a></div>
+        <div>ارائه شده در  <a href="https://electera.top/" target="_blank">الکترا</a></div>
         <div>
             <nav class="nav">
                 <a href="#" class="nav-link">مجوزها</a>

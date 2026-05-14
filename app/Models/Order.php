@@ -33,6 +33,8 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'source',
+        'marketer_id',
+        'marketing_sale_id',
         'order_number',
         'total_amount',
         'shipping_fee',

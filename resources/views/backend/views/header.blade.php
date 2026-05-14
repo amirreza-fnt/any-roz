@@ -7,7 +7,6 @@
         </li>
         <li class="nav-item d-none d-sm-flex align-items-center ml-2">
             <a href="{{ admin_home_url() }}" class="navbar-brand d-flex align-items-center mb-0 py-0">
-                <img class="logo logo-sm mr-2" src="{{ asset('assets/back-end/assets/media/image/logo-sm.png') }}" alt="لوگو">
                 <span class="font-weight-600 text-dark">پنل مدیریت آنی‌رز</span>
             </a>
         </li>

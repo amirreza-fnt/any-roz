@@ -1,5 +1,9 @@
 @extends('backend.views.view')
 
+@php
+    use App\Support\JalaliCalendar;
+@endphp
+
 @push('styles')
 <style>
     .acct-hub-hero {
@@ -46,7 +50,7 @@
                     </ol>
                 </nav>
             </div>
-            <div class="text-muted small">{{ $from->format('Y/m/d') }} — {{ $to->format('Y/m/d') }}</div>
+            <div class="text-muted small text-left" dir="ltr">{{ JalaliCalendar::formatShamsiDate($from) }} — {{ JalaliCalendar::formatShamsiDate($to) }}</div>
         </div>
 
         <div class="acct-hub-hero">
@@ -104,11 +108,7 @@
                     <div class="card-body d-flex flex-column">
                         <h5 class="mb-2">۲ — فروش بازاریابان</h5>
                         <p class="lead flex-grow-1">بررسی و تأیید یا رد فروش‌های ثبت‌شده توسط بازاریابان؛ پس از تأیید فاکتور رسمی ساخته می‌شود.</p>
-                        @if(Route::has('admin.accounting.marketing-sales.index'))
-                            <a href="{{ route('admin.accounting.marketing-sales.index') }}" class="btn btn-warning text-dark rounded-pill mt-2">ورود به صف بررسی</a>
-                        @else
-                            <button type="button" class="btn btn-outline-secondary rounded-pill mt-2" disabled>در این نسخهٔ نمایشی مسیر جداگانه تعریف نشده</button>
-                        @endif
+                        <a href="{{ route('admin.accounting.marketing-sales.index') }}" class="btn btn-warning text-dark rounded-pill mt-2">ورود به صف بررسی</a>
                     </div>
                 </div>
             </div>
@@ -166,6 +166,11 @@
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof ApexCharts === 'undefined') return;
     var spark = @json($spark);
+    if (!spark || !spark.length) {
+        var el = document.querySelector('#acct-hub-spark');
+        if (el) el.innerHTML = '<p class="text-muted small mb-0 p-3">داده‌ای برای این بازه ثبت نشده است.</p>';
+        return;
+    }
     var categories = spark.map(function (r) { return r.d; });
     var series = [{ name: 'فروش', data: spark.map(function (r) { return r.revenue; }) }];
     new ApexCharts(document.querySelector('#acct-hub-spark'), {

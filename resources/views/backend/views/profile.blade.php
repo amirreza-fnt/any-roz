@@ -1,15 +1,15 @@
 <!-- begin::logo -->
     <div id="logo">
         <a href="{{ admin_home_url() }}">
-            <img class="logo" src="{{ asset('assets/back-end/assets/media/image/logo.png') }}" alt="logo">
-            <img class="logo-sm" src="{{ asset('assets/back-end/assets/media/image/logo-sm.png') }}" alt="small logo">
-            <img class="logo-dark" src="{{ asset('assets/back-end/assets/media/image/logo-dark.png') }}" alt="small logo">
+            <img style="border-radius: 5px" class="logo" src="{{ asset('assets/back-end/assets/media/image/logo.png') }}" width="80" alt="logo">
+            <img style="border-radius: 5px" class="logo-sm" src="{{ asset('assets/back-end/assets/media/image/logo-sm.png') }}" width="80" alt="small logo">
+            <img style="border-radius: 5px" class="logo-dark" src="{{ asset('assets/back-end/assets/media/image/logo-dark.png') }}" width="80" alt="small logo">
         </a>
     </div>
     <!-- end::logo -->
 <header class="navigation-header">
     <figure class="avatar avatar-state-success">
-        <img src="{{ asset('assets/back-end/assets/media/image/user/man_avatar3.jpg') }}" class="rounded-circle" alt="image">
+        <img src="{{ asset('assets/back-end/assets/media/image/image1.png') }}" class="rounded-circle" alt="image">
     </figure>
     <div>
         <h5>{{ auth('admin')->user()->full_name }}</h5>
