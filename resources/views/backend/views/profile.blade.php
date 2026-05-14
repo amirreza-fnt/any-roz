@@ -1,6 +1,6 @@
 <!-- begin::logo -->
     <div id="logo">
-        <a href="{{ route('admin.dashboard') }}">
+        <a href="{{ admin_home_url() }}">
             <img class="logo" src="{{ asset('assets/back-end/assets/media/image/logo.png') }}" alt="logo">
             <img class="logo-sm" src="{{ asset('assets/back-end/assets/media/image/logo-sm.png') }}" alt="small logo">
             <img class="logo-dark" src="{{ asset('assets/back-end/assets/media/image/logo-dark.png') }}" alt="small logo">
@@ -16,7 +16,7 @@
         <p class="text-muted line-height-20 m-b-25">{{ auth('admin')->user()->position ?: 'مدیر' }}</p>
         <ul class="nav">
             <li class="nav-item">
-                <a href="{{ route('admin.dashboard') }}" class="btn nav-link bg-info-bright" title="داشبورد" data-toggle="tooltip">
+                <a href="{{ admin_home_url() }}" class="btn nav-link bg-info-bright" title="داشبورد" data-toggle="tooltip">
                     <i data-feather="home"></i>
                 </a>
             </li>

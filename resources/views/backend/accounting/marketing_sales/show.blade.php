@@ -21,6 +21,16 @@
             <a href="{{ route('admin.accounting.marketing-sales.index') }}" class="btn btn-light">بازگشت به لیست</a>
         </div>
 
+        @if ($errors->any())
+            <div class="alert alert-danger border-0 shadow-sm mb-3">
+                <ul class="mb-0 pr-3 small">
+                    @foreach ($errors->all() as $err)
+                        <li>{{ $err }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         @if ($sale->isPending())
             <div class="alert alert-warning border-0 shadow-sm">
                 این فروش در انتظار تصمیم شماست. با تأیید، فاکتور رسمی ایجاد و <strong>به‌طور خودکار به بخش تأمین ارسال</strong> می‌شود.
@@ -122,7 +132,8 @@
                                 @csrf
                                 <div class="form-group">
                                     <label class="small text-muted">یادداشت حسابدار (اختیاری)</label>
-                                    <textarea name="accountant_note" class="form-control" rows="2" maxlength="2000">{{ old('accountant_note') }}</textarea>
+                                    <textarea name="accountant_note" class="form-control @error('accountant_note') is-invalid @enderror" rows="2" maxlength="2000">{{ old('accountant_note') }}</textarea>
+                                    @error('accountant_note')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                                 </div>
                                 <button type="submit" class="btn btn-success btn-block font-weight-bold">تأیید و ایجاد فاکتور</button>
                             </form>
@@ -138,7 +149,8 @@
                                 @csrf
                                 <div class="form-group">
                                     <label class="small text-muted">دلیل / یادداشت</label>
-                                    <textarea name="accountant_note" class="form-control" rows="2" maxlength="2000"></textarea>
+                                    <textarea name="accountant_note" class="form-control @error('accountant_note') is-invalid @enderror" rows="2" maxlength="2000">{{ old('accountant_note') }}</textarea>
+                                    @error('accountant_note')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                                 </div>
                                 <button type="submit" class="btn btn-outline-danger btn-block">رد</button>
                             </form>

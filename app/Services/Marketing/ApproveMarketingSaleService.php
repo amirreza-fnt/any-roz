@@ -141,6 +141,10 @@ class ApproveMarketingSaleService
 
         foreach ($sale->items as $line) {
             $product = $line->product;
+            if (! $product) {
+                throw new RuntimeException('یکی از اقلام فروش به محصول حذف‌شده یا نامعتبر لینک شده است؛ ابتدا اقلام را اصلاح کنید.');
+            }
+
             $imagePath = $product->images->first()?->path;
 
             OrderProduct::create([

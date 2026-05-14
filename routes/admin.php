@@ -87,6 +87,8 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
             ->name('shipping-configs.toggle-status');
         Route::resource('shipping-configs', App\Http\Controllers\Admin\Shipping\ShippingConfigController::class)->except(['destroy']);
 
+        Route::get('technical-backup/progress/{token}', [App\Http\Controllers\Admin\Tools\TechnicalBackupController::class, 'progress'])->name('technical-backup.progress');
+        Route::get('technical-backup/file/{token}/{index}', [App\Http\Controllers\Admin\Tools\TechnicalBackupController::class, 'file'])->whereNumber('index')->name('technical-backup.file');
         Route::get('technical-backup', [App\Http\Controllers\Admin\Tools\TechnicalBackupController::class, 'index'])->name('technical-backup.index');
         Route::post('technical-backup/download', [App\Http\Controllers\Admin\Tools\TechnicalBackupController::class, 'download'])->name('technical-backup.download');
 

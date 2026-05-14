@@ -4,9 +4,38 @@
     @include('backend.views.meta')
     <title>پنل مدیریت</title>
     @include('backend.views.links')
+    <style>
+        /* چسباندن فوتر به پایین نما حتی وقتی محتوا کوتاه است */
+        body.admin-shell {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: row;
+            margin: 0;
+        }
+        body.admin-shell > .navigation {
+            flex-shrink: 0;
+        }
+        body.admin-shell > #main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            min-width: 0;
+        }
+        body.admin-shell > #main > .header {
+            flex-shrink: 0;
+        }
+        body.admin-shell > #main > .main-content {
+            flex: 1 0 auto;
+        }
+        body.admin-shell > #main > footer {
+            flex-shrink: 0;
+            margin-top: auto;
+        }
+    </style>
     @stack('styles')
 </head>
-<body>
+<body class="admin-shell">
 <!-- begin::preloader-->
 @include('backend.views.preloader')
 <!-- end::preloader -->

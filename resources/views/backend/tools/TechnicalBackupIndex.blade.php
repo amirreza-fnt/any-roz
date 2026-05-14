@@ -7,15 +7,22 @@
             <h4>پشتیبان‌گیری فنی</h4>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">خانه</a></li>
+                    <li class="breadcrumb-item"><a href="{{ admin_home_url() }}">خانه</a></li>
                     <li class="breadcrumb-item active">پشتیبان‌گیری</li>
                 </ol>
             </nav>
         </div>
 
+        @if (session('warning'))
+            <div class="alert alert-warning border-0 shadow-sm mb-3">{{ session('warning') }}</div>
+        @endif
+        @if (session('success'))
+            <div class="alert alert-success border-0 shadow-sm mb-3">{{ session('success') }}</div>
+        @endif
+
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-body">
-                <p class="text-muted mb-0">یک فایل <strong>CSV</strong> (با BOM برای Excel) دانلود می‌شود؛ هر بخش انتخاب‌شده با یک سربرگ جدا می‌شود. بخش‌های بدون داده در فایل نمی‌آیند.</p>
+                <p class="text-muted mb-0">برای <strong>هر بخش انتخاب‌شده یک فایل CSV جدا</strong> (سازگار با Excel، با BOM) دانلود می‌شود. پس از ارسال فرم، صفحهٔ دانلود باز می‌شود و مرورگر فایل‌ها را پشت‌سرهم ذخیره می‌کند. بخش‌های بدون داده در خروج نمی‌آیند.</p>
             </div>
         </div>
 
@@ -35,7 +42,7 @@
                 </div>
             </div>
             <div class="card-footer bg-white">
-                <button type="submit" class="btn btn-primary">دانلود CSV</button>
+                <button type="submit" class="btn btn-primary">شروع دانلود فایل‌ها</button>
             </div>
         </form>
     </div>

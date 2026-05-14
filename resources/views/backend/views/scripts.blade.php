@@ -45,11 +45,20 @@
 <script src="{{ asset('assets/back-end/assets/js/app.js')  }}"></script>
 
 <script>
-    @if(session('message'))
-        toastr.{{ session('message')['type'] }}('{{ session('message')['message'] }}');
-        @php
-            session()->forget('message');
-        @endphp
+    @if (session('message'))
+        document.addEventListener('DOMContentLoaded', function () {
+            @php
+                $m = session('message');
+                $type = $m['type'] ?? 'info';
+                if ($type === 'danger') {
+                    $type = 'error';
+                }
+                if (! in_array($type, ['success', 'info', 'warning', 'error'], true)) {
+                    $type = 'info';
+                }
+            @endphp
+            toastr.{{ $type }}(@json($m['message'] ?? ''));
+        });
     @endif
 </script>
 

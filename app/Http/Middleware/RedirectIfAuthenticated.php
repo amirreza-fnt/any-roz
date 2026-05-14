@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\AdminAccess;
 use App\Providers\RouteServiceProvider;
 use Closure;
 use Illuminate\Http\Request;
@@ -22,7 +23,17 @@ class RedirectIfAuthenticated
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
                 if ($guard === 'admin') {
-                    return redirect()->route('admin.dashboard');
+                    /** @var \App\Models\Admin|null $admin */
+                    $admin = Auth::guard('admin')->user();
+                    if (! $admin) {
+                        return redirect()->route('admin.login');
+                    }
+                    $url = AdminAccess::firstAccessibleUrl($admin);
+                    if ($url === null) {
+                        abort(403, 'هیچ بخشی برای این حساب فعال نیست.');
+                    }
+
+                    return redirect()->to($url);
                 }
 
                 return redirect(RouteServiceProvider::HOME);

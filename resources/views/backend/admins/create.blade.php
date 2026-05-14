@@ -7,12 +7,23 @@
             <h4>افزودن مدیر</h4>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">خانه</a></li>
+                    <li class="breadcrumb-item"><a href="{{ admin_home_url() }}">خانه</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('admin.managers.index') }}">مدیران</a></li>
                     <li class="breadcrumb-item active">افزودن</li>
                 </ol>
             </nav>
         </div>
+
+        @if ($errors->any())
+            <div class="alert alert-danger border-0 shadow-sm mb-3">
+                <div class="font-weight-bold mb-2">لطفاً خطاهای زیر را اصلاح کنید:</div>
+                <ul class="mb-0 pr-3 small">
+                    @foreach ($errors->all() as $err)
+                        <li>{{ $err }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <form method="post" action="{{ route('admin.managers.store') }}" class="row">
             @csrf
@@ -38,18 +49,21 @@
                         </div>
                         <div class="form-group">
                             <label>رمز عبور <span class="text-danger">*</span></label>
-                            <input type="password" name="password" class="form-control" required autocomplete="new-password">
+                            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" required autocomplete="new-password">
+                            @error('password')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
                         <div class="form-group">
                             <label>تکرار رمز عبور <span class="text-danger">*</span></label>
-                            <input type="password" name="password_confirmation" class="form-control" required autocomplete="new-password">
+                            <input type="password" name="password_confirmation" class="form-control @error('password') is-invalid @enderror" required autocomplete="new-password">
                         </div>
+                        <input type="hidden" name="is_active" value="0">
                         <div class="custom-control custom-checkbox mb-2">
-                            <input type="checkbox" class="custom-control-input" name="is_active" id="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}>
+                            <input type="checkbox" class="custom-control-input" name="is_active" id="is_active" value="1" {{ old('is_active', '1') === '1' || old('is_active') === true ? 'checked' : '' }}>
                             <label class="custom-control-label" for="is_active">حساب فعال باشد</label>
                         </div>
+                        <input type="hidden" name="is_super" value="0">
                         <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" name="is_super" id="is_super" value="1" {{ old('is_super') ? 'checked' : '' }}>
+                            <input type="checkbox" class="custom-control-input" name="is_super" id="is_super" value="1" {{ old('is_super', '0') === '1' || old('is_super') === true ? 'checked' : '' }}>
                             <label class="custom-control-label" for="is_super">سوپرادمین (دسترسی کامل)</label>
                         </div>
                     </div>

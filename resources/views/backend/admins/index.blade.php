@@ -8,7 +8,7 @@
                 <h4 class="mb-1">مدیران سیستم</h4>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">خانه</a></li>
+                        <li class="breadcrumb-item"><a href="{{ admin_home_url() }}">خانه</a></li>
                         <li class="breadcrumb-item active">مدیران</li>
                     </ol>
                 </nav>

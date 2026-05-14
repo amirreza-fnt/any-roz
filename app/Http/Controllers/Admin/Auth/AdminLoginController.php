@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
+use App\Support\AdminAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -13,7 +14,14 @@ class AdminLoginController extends Controller
     public function showLoginForm()
     {
         if (Auth::guard('admin')->check()) {
-            return redirect()->route('admin.dashboard');
+            /** @var Admin $admin */
+            $admin = Auth::guard('admin')->user();
+            $url = AdminAccess::firstAccessibleUrl($admin);
+            if ($url === null) {
+                abort(403, 'هیچ بخشی برای این حساب فعال نیست.');
+            }
+
+            return redirect()->to($url);
         }
 
         return view('backend.auth.admin-login');
@@ -46,7 +54,15 @@ class AdminLoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('admin.dashboard'));
+        $url = AdminAccess::firstAccessibleUrl($admin);
+        if ($url === null) {
+            Auth::guard('admin')->logout();
+            throw ValidationException::withMessages([
+                'phone' => 'هیچ بخشی برای این حساب فعال نیست؛ با مدیر اصلی تماس بگیرید.',
+            ]);
+        }
+
+        return redirect()->to($url);
     }
 
     public function logout(Request $request)

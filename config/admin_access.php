@@ -97,6 +97,8 @@ return [
 
         'admin.technical-backup.index' => 'technical_backup.view',
         'admin.technical-backup.download' => 'technical_backup.download',
+        'admin.technical-backup.progress' => 'technical_backup.download',
+        'admin.technical-backup.file' => 'technical_backup.download',
 
         'admin.users.index' => 'users.view',
         'admin.users.create' => 'users.create',

@@ -15,7 +15,9 @@ use App\Models\ShippingConfig;
 use App\Models\TypeOfWeight;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 class TechnicalBackupController extends Controller
 {
@@ -49,13 +51,12 @@ class TechnicalBackupController extends Controller
         }
         $selected = array_values(array_intersect($selected, $allowed));
         if ($selected === []) {
-            message('warning', 'حداقل یک بخش را برای خروج انتخاب کنید.');
-
-            return redirect()->back();
+            return redirect()->back()->with('warning', 'حداقل یک بخش را برای خروج انتخاب کنید.');
         }
 
         $warnings = [];
-        $blocks = [];
+        $files = [];
+        $stamp = date('Y-m-d-His');
 
         foreach ($selected as $key) {
             $csv = match ($key) {
@@ -79,32 +80,81 @@ class TechnicalBackupController extends Controller
                 continue;
             }
 
-            $blocks[] = '### '.self::MODULE_LABELS[$key].' ('.$key.") ###\r\n".ltrim($csv, "\xEF\xBB\xBF");
+            $files[] = [
+                'filename' => 'backup-'.$key.'-'.$stamp.'.csv',
+                'body' => $csv,
+                'label' => self::MODULE_LABELS[$key],
+            ];
         }
 
-        if ($blocks === []) {
-            message('warning', implode(' ', $warnings) ?: 'خروجی خالی است.');
-
-            return redirect()->route('admin.technical-backup.index');
+        if ($files === []) {
+            return redirect()->back()->with('warning', implode(' ', $warnings) ?: 'خروجی خالی است.');
         }
 
+        $token = Str::uuid()->toString();
+        Cache::put($this->batchCacheKey($token), ['files' => $files], now()->addMinutes(10));
+
+        $msg = count($files).' فایل CSV (سازگار با Excel) برای دانلود آماده شد.';
         if ($warnings !== []) {
-            message('warning', 'بخش‌های بدون داده حذف شدند. '.implode(' ', $warnings));
-        } else {
-            message('success', 'فایل CSV (سازگار با Excel) آمادهٔ دانلود است.');
+            $msg .= ' '.implode(' ', $warnings);
         }
 
-        $body = "\xEF\xBB\xBF".implode("\r\n\r\n", $blocks);
-        $filename = 'technical-backup-'.date('Y-m-d-His').'.csv';
+        return redirect()
+            ->route('admin.technical-backup.progress', ['token' => $token])
+            ->with('success', $msg)
+            ->with('tb_warnings', $warnings);
+    }
+
+    public function progress(string $token)
+    {
+        $batch = Cache::get($this->batchCacheKey($token));
+        if (! is_array($batch) || empty($batch['files']) || ! is_array($batch['files'])) {
+            return redirect()
+                ->route('admin.technical-backup.index')
+                ->with('warning', 'نشست دانلود منقضی یا نامعتبر است؛ دوباره تلاش کنید.');
+        }
+
+        $count = count($batch['files']);
+        $downloadUrls = [];
+        for ($i = 0; $i < $count; $i++) {
+            $downloadUrls[] = route('admin.technical-backup.file', ['token' => $token, 'index' => $i]);
+        }
+
+        $filenames = array_column($batch['files'], 'filename');
+        $labels = array_column($batch['files'], 'label');
+
+        return view('backend.tools.TechnicalBackupProgress', [
+            'token' => $token,
+            'downloadUrls' => $downloadUrls,
+            'filenames' => $filenames,
+            'labels' => $labels,
+        ]);
+    }
+
+    public function file(string $token, int $index)
+    {
+        $batch = Cache::get($this->batchCacheKey($token));
+        if (! is_array($batch) || empty($batch['files']) || ! isset($batch['files'][$index])) {
+            abort(404);
+        }
+
+        $file = $batch['files'][$index];
+        $body = $file['body'] ?? '';
+        $filename = $file['filename'] ?? ('export-'.$index.'.csv');
 
         return response($body, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="'.$filename.'"',
             'Content-Length' => (string) strlen($body),
             'Cache-Control' => 'private, no-store, must-revalidate',
-            'Pragma' => 'public',
+            'Pragma' => 'no-cache',
             'X-Content-Type-Options' => 'nosniff',
         ]);
+    }
+
+    private function batchCacheKey(string $token): string
+    {
+        return 'technical_backup_batch:'.$token;
     }
 
     private function csvFromRows(array $headers, array $rows): string

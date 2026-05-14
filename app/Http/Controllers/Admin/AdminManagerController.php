@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Support\AdminAccess;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use Throwable;
 
 class AdminManagerController extends Controller
@@ -139,6 +140,16 @@ class AdminManagerController extends Controller
 
         $id = $existing?->id;
 
+        $passwordRules = [
+            'nullable',
+            'string',
+            'confirmed',
+            Password::min(8)->letters()->mixedCase()->numbers()->symbols(),
+        ];
+        if (! $existing) {
+            $passwordRules[0] = 'required';
+        }
+
         $data = $request->validate([
             'first_name' => ['required', 'string', 'max:120'],
             'last_name' => ['required', 'string', 'max:120'],
@@ -148,7 +159,12 @@ class AdminManagerController extends Controller
             'father_name' => ['nullable', 'string', 'max:120'],
             'birth_date' => ['nullable', 'date'],
             'position' => ['nullable', 'string', 'max:255'],
-            'password' => [$existing ? 'nullable' : 'required', 'string', 'min:8', 'confirmed'],
+            'password' => $passwordRules,
+        ], [], [
+            'first_name' => 'نام',
+            'last_name' => 'نام خانوادگی',
+            'phone' => 'شماره موبایل',
+            'password' => 'رمز عبور',
         ]);
 
         foreach (['email', 'national_id', 'father_name', 'birth_date', 'position'] as $k) {
