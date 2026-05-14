@@ -43,12 +43,13 @@ class ApproveMarketingSaleService
                 'order_id' => $order->id,
                 'accountant_note' => $accountantNote,
                 'reviewed_at' => now(),
-                'reviewed_by' => auth()->id(),
+                'reviewed_by' => auth('admin')->id(),
             ]);
 
             OrderHistory::create([
                 'order_id' => $order->id,
-                'user_id' => auth()->id(),
+                'user_id' => null,
+                'admin_id' => auth('admin')->id(),
                 'status' => 'marketing_sale_approved',
                 'note' => 'سفارش از تأیید فروش بازاریابی شمارهٔ '.$sale->id.' ایجاد شد.',
             ]);
@@ -81,7 +82,8 @@ class ApproveMarketingSaleService
 
                     OrderHistory::create([
                         'order_id' => $order->id,
-                        'user_id' => auth()->id(),
+                        'user_id' => null,
+                        'admin_id' => auth('admin')->id(),
                         'status' => 'marketing_sale_rejected',
                         'note' => 'فروش بازاریابی شمارهٔ '.$sale->id.' توسط حسابدار رد شد.',
                     ]);
@@ -92,7 +94,7 @@ class ApproveMarketingSaleService
                 'status' => MarketingSale::STATUS_REJECTED,
                 'accountant_note' => $accountantNote,
                 'reviewed_at' => now(),
-                'reviewed_by' => auth()->id(),
+                'reviewed_by' => auth('admin')->id(),
             ]);
         });
     }

@@ -336,7 +336,7 @@
                         <h6 class="font-weight-bold mb-2">تاریخچه رویدادها</h6>
                         @foreach ($order->histories as $h)
                             <div class="timeline-item">
-                                <div class="small text-muted">{{ JalaliCalendar::formatShamsiDateTime($h->created_at) }} @if($h->user) — {{ $h->user->name }} @endif</div>
+                                <div class="small text-muted">{{ JalaliCalendar::formatShamsiDateTime($h->created_at) }} @if($h->admin) — {{ $h->admin->full_name }} @elseif($h->user) — {{ $h->user->name }} @endif</div>
                                 <div class="font-weight-600">{{ $h->status }}</div>
                                 @if ($h->note)
                                     <div class="small mt-1" style="white-space:pre-wrap;">{{ $h->note }}</div>

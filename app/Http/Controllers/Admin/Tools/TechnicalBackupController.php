@@ -15,7 +15,9 @@ use App\Models\ShippingConfig;
 use App\Models\TypeOfWeight;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use ZipArchive;
 
 class TechnicalBackupController extends Controller
@@ -41,7 +43,7 @@ class TechnicalBackupController extends Controller
         ]);
     }
 
-    public function download(Request $request)
+    public function prepare(Request $request)
     {
         if (! class_exists(ZipArchive::class)) {
             message('error', 'افزونهٔ ZipArchive روی سرور فعال نیست.');
@@ -49,14 +51,51 @@ class TechnicalBackupController extends Controller
             return redirect()->back();
         }
 
+        $package = $this->buildZipPackage($request);
+        if ($package === null) {
+            return redirect()->back();
+        }
+
+        $token = Str::random(48);
+        Cache::put('technical-backup:'.$token, $package, now()->addMinutes(10));
+
+        return redirect()->route('admin.technical-backup.fetch', ['token' => $token]);
+    }
+
+    public function fetch(string $token)
+    {
+        $payload = Cache::pull('technical-backup:'.$token);
+        if (! is_array($payload) || empty($payload['path']) || ! is_file($payload['path'])) {
+            abort(404, 'لینک دانلود منقضی شده یا نامعتبر است.');
+        }
+
+        $filename = $payload['filename'] ?? 'backup.zip';
+        $path = $payload['path'];
+        $length = (string) filesize($path);
+
+        return response()->download($path, $filename, [
+            'Content-Type' => 'application/octet-stream',
+            'Content-Length' => $length,
+            'Cache-Control' => 'private, no-store, must-revalidate',
+            'Pragma' => 'public',
+        ])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * @return array{path: string, filename: string}|null
+     */
+    private function buildZipPackage(Request $request): ?array
+    {
         $allowed = array_keys(self::MODULE_LABELS);
-        $selected = $request->query('modules', $allowed);
+        $selected = $request->input('modules', []);
         if (! is_array($selected)) {
-            $selected = $allowed;
+            $selected = [];
         }
         $selected = array_values(array_intersect($selected, $allowed));
         if ($selected === []) {
-            $selected = $allowed;
+            message('warning', 'حداقل یک بخش را برای خروج انتخاب کنید.');
+
+            return null;
         }
 
         $warnings = [];
@@ -89,7 +128,7 @@ class TechnicalBackupController extends Controller
         if ($files === []) {
             message('warning', implode(' ', $warnings) ?: 'هیچ فایلی برای خروج ساخته نشد.');
 
-            return redirect()->route('admin.technical-backup.index');
+            return null;
         }
 
         $tmp = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'tb-'.uniqid('', true).'.zip';
@@ -97,7 +136,7 @@ class TechnicalBackupController extends Controller
         if ($zip->open($tmp, ZipArchive::OVERWRITE | ZipArchive::CREATE) !== true) {
             message('error', 'ایجاد فایل فشرده با خطا مواجه شد.');
 
-            return redirect()->back();
+            return null;
         }
         foreach ($files as $name => $content) {
             $zip->addFromString($name, $content);
@@ -107,18 +146,12 @@ class TechnicalBackupController extends Controller
         if ($warnings !== []) {
             message('warning', 'بخش‌های بدون داده در بسته قرار نگرفتند. '.implode(' ', $warnings));
         } else {
-            message('success', 'بستهٔ پشتیبان آماده شد.');
+            message('success', 'بستهٔ پشتیبان آماده شد؛ دانلود آغاز می‌شود.');
         }
 
         $filename = 'technical-backup-'.date('Y-m-d-His').'.zip';
-        $length = (string) filesize($tmp);
 
-        return response()->download($tmp, $filename, [
-            'Content-Type' => 'application/zip',
-            'Content-Length' => $length,
-            'Cache-Control' => 'private, no-store, must-revalidate',
-            'Pragma' => 'public',
-        ])->deleteFileAfterSend(true);
+        return ['path' => $tmp, 'filename' => $filename];
     }
 
     private function csvFromRows(array $headers, array $rows): string

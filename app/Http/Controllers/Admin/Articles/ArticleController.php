@@ -64,7 +64,7 @@ class ArticleController extends Controller
             'noindex' => (bool) ($request->boolean('noindex')),
             'status' => $data['status'],
             'published_at' => $data['published_at'] ?? null,
-            'author_id' => auth()->id(),
+            'author_id' => \App\Models\User::query()->orderBy('id')->value('id'),
             'category_id' => $data['category_id'] ?? null,
             'reading_minutes' => $reading,
             'is_featured' => $request->boolean('is_featured'),

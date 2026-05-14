@@ -1,16 +1,27 @@
 <script>
 (function () {
-    var map = L.map('buyer-map', { zoomControl: true }).setView([32.4279, 53.6880], 5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
+    var mapKey = @json(config('neshan.map_api_key'));
+    var el = document.getElementById('buyer-map');
+    if (!el) return;
+    if (!mapKey) {
+        el.innerHTML = '<div class="p-3 text-danger small">کلید نقشهٔ نشان تنظیم نشده است. متغیر <code>NESHAN_MAP_API_KEY</code> را در فایل .env قرار دهید.</div>';
+        return;
+    }
+
     var latIn = document.getElementById('buyer-lat');
     var lngIn = document.getElementById('buyer-lng');
     var lat = parseFloat(latIn.value) || 35.6892;
     var lng = parseFloat(lngIn.value) || 51.3890;
+
+    var map = new L.Map('buyer-map', {
+        key: mapKey,
+        maptype: 'dreamy',
+        center: [lat, lng],
+        zoom: latIn.value ? 14 : 6
+    });
+
     var marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-    map.setView([lat, lng], latIn.value ? 14 : 6);
+
     function sync() {
         var ll = marker.getLatLng();
         latIn.value = ll.lat.toFixed(6);
@@ -46,7 +57,7 @@
                 })
                 .catch(function () {
                     revBtn.disabled = false;
-                    alert('خطا در اتصال به سرویس آدرس‌یابی.');
+                    alert('خطا در اتصال به سرویس آدرس‌یابی نشان.');
                 });
         });
     }
@@ -54,21 +65,23 @@
     var prov = document.getElementById('buyer-province');
     var city = document.getElementById('buyer-city');
     var citiesUrl = @json(route('admin.marketing.api.cities'));
-    prov.addEventListener('change', function () {
-        var pid = this.value;
-        city.innerHTML = '<option value="">— انتخاب —</option>';
-        if (!pid) return;
-        fetch(citiesUrl + '?province_id=' + encodeURIComponent(pid), { headers: { 'Accept': 'application/json' } })
-            .then(function (r) { return r.json(); })
-            .then(function (rows) {
-                rows.forEach(function (c) {
-                    var o = document.createElement('option');
-                    o.value = c.id;
-                    o.textContent = c.name;
-                    city.appendChild(o);
+    if (prov && city) {
+        prov.addEventListener('change', function () {
+            var pid = this.value;
+            city.innerHTML = '<option value="">— انتخاب —</option>';
+            if (!pid) return;
+            fetch(citiesUrl + '?province_id=' + encodeURIComponent(pid), { headers: { 'Accept': 'application/json' } })
+                .then(function (r) { return r.json(); })
+                .then(function (rows) {
+                    rows.forEach(function (c) {
+                        var o = document.createElement('option');
+                        o.value = c.id;
+                        o.textContent = c.name;
+                        city.appendChild(o);
+                    });
                 });
-            });
-    });
+        });
+    }
     if (typeof feather !== 'undefined') feather.replace();
 })();
 </script>

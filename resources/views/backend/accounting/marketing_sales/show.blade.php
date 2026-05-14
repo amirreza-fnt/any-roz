@@ -148,7 +148,7 @@
 
                 @if($sale->reviewed_at)
                     <div class="small text-muted mt-2">زمان بررسی: {{ JalaliCalendar::formatShamsiDateTime($sale->reviewed_at) }}
-                        @if($sale->reviewer) — {{ $sale->reviewer->name }} @endif
+                        @if($sale->reviewer) — {{ $sale->reviewer->full_name }} @endif
                     </div>
                 @endif
             </div>

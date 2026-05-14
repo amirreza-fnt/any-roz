@@ -107,7 +107,7 @@ class MarketingLookupController extends Controller
     }
 
     /**
-     * Reverse geocode via ApiEco Cedar (see config/services.php apieco.*).
+     * Reverse geocode via Neshan (https://platform.neshan.org/docs/) — server-side with service API key.
      */
     public function reverseGeocode(Request $request)
     {
@@ -116,46 +116,44 @@ class MarketingLookupController extends Controller
             'lng' => 'required|numeric',
         ]);
 
-        $key = (string) config('services.apieco.key');
+        $key = (string) config('neshan.service_api_key');
         if ($key === '') {
             return response()->json([
                 'ok' => false,
-                'message' => 'برای آدرس‌یابی سیدارمپ، متغیر APIECO_KEY را در فایل .env تنظیم کنید (بازار ApiEco).',
+                'message' => 'برای آدرس‌یابی، متغیر NESHAN_SERVICE_API_KEY را در .env قرار دهید (کلید وب‌سرویس با سرویس «تبدیل نقطه به آدرس»).',
             ], 422);
         }
 
         $lat = $request->float('lat');
         $lng = $request->float('lng');
-        $template = (string) config('services.apieco.reverse_geocode_url');
-        $point = $lat.','.$lng;
-        $url = str_replace(['{point}', '{lat}', '{lng}'], [$point, (string) $lat, (string) $lng], $template);
-
-        $mapIrKey = (string) (config('services.apieco.map_ir_key') ?: $key);
+        $url = 'https://api.neshan.org/v5/reverse?'.http_build_query([
+            'lat' => $lat,
+            'lng' => $lng,
+        ]);
 
         try {
             $response = Http::timeout(20)
                 ->withHeaders([
-                    'apieco_key' => $key,
-                    'Api-Key' => $mapIrKey,
+                    'Api-Key' => $key,
                     'Accept' => 'application/json',
                 ])
-                ->post($url);
+                ->get($url);
         } catch (\Throwable $e) {
             return response()->json([
                 'ok' => false,
-                'message' => 'اتصال به سرویس آدرس‌یابی برقرار نشد.',
+                'message' => 'اتصال به سرویس نشان برقرار نشد.',
             ], 502);
         }
 
         if (! $response->successful()) {
             return response()->json([
                 'ok' => false,
-                'message' => 'سرویس آدرس‌یابی پاسخ نامعتبر داد.',
+                'message' => 'سرویس نشان پاسخ خطا داد.',
             ], 502);
         }
 
         $json = $response->json();
-        $address = is_array($json) ? $this->pickAddressFromGeocodeJson($json) : null;
+        $address = is_array($json) ? $this->pickNeshanAddress($json) : null;
 
         if ($address === null || $address === '') {
             return response()->json([
@@ -173,29 +171,19 @@ class MarketingLookupController extends Controller
     /**
      * @param  array<string, mixed>  $data
      */
-    private function pickAddressFromGeocodeJson(array $data): ?string
+    private function pickNeshanAddress(array $data): ?string
     {
-        foreach (['address', 'formatted_address', 'formattedAddress', 'text', 'title', 'name', 'label'] as $k) {
+        foreach (['formatted_address', 'address', 'formattedAddress', 'neighbourhood', 'route_name', 'place', 'title'] as $k) {
             if (! empty($data[$k]) && is_string($data[$k])) {
                 return trim($data[$k]);
             }
         }
 
-        foreach (['data', 'result', 'results', 'body', 'response'] as $nested) {
+        foreach (['location', 'result', 'data'] as $nested) {
             if (isset($data[$nested]) && is_array($data[$nested])) {
-                if ($nested === 'results') {
-                    $first = reset($data[$nested]);
-                    if (is_array($first)) {
-                        $picked = $this->pickAddressFromGeocodeJson($first);
-                        if ($picked) {
-                            return $picked;
-                        }
-                    }
-                } else {
-                    $picked = $this->pickAddressFromGeocodeJson($data[$nested]);
-                    if ($picked) {
-                        return $picked;
-                    }
+                $picked = $this->pickNeshanAddress($data[$nested]);
+                if ($picked) {
+                    return $picked;
                 }
             }
         }

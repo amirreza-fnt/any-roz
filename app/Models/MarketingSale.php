@@ -53,7 +53,7 @@ class MarketingSale extends Model
 
     public function reviewer(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'reviewed_by');
+        return $this->belongsTo(Admin::class, 'reviewed_by');
     }
 
     public static function statusLabel(string $status): string

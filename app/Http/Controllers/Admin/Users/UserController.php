@@ -72,12 +72,6 @@ class UserController extends Controller
         ]);
         $data['mobile'] = ($data['mobile'] ?? '') === '' ? null : $data['mobile'];
 
-        if ($user->id === auth()->id() && ! $request->boolean('is_active')) {
-            message('warning', 'غیرفعال کردن حسابی که با آن وارد شده‌اید مجاز نیست.');
-
-            return redirect()->back()->withInput();
-        }
-
         $user->name = $data['name'];
         $user->email = $data['email'];
         $user->mobile = $data['mobile'] ?? null;
@@ -94,12 +88,6 @@ class UserController extends Controller
 
     public function toggleActive(User $user)
     {
-        if ($user->id === auth()->id()) {
-            message('warning', 'تغییر وضعیت حسابی که با آن وارد شده‌اید مجاز نیست.');
-
-            return redirect()->back();
-        }
-
         $user->is_active = ! $user->is_active;
         $user->save();
 

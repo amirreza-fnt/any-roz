@@ -58,7 +58,7 @@
     <div class="col-lg-6">
         <div class="border rounded-lg p-3 mb-3 bg-light">
             <h6 class="font-weight-bold mb-2">موقعیت روی نقشه</h6>
-            <p class="small text-muted mb-2">نقشهٔ پایه از OpenStreetMap (رایگان) است. برای <strong>آدرس نوشتاری از روی مختصات</strong> می‌توانید از وب‌سرویس آدرس‌یابی سیدارمپ از طریق بازار <a href="https://apieco.ir/api/cedarmap-reverse-geocoding/" target="_blank" rel="noopener">ApiEco</a> استفاده کنید؛ کلید <code class="small">APIECO_KEY</code> را در <code class="small">.env</code> قرار دهید و دکمهٔ زیر را بزنید.</p>
+            <p class="small text-muted mb-2">نقشهٔ تعاملی از <strong>پلتفرم نشان</strong> (Leaflet SDK) است. برای پر کردن آدرس از روی نقطهٔ انتخاب‌شده، کلید وب‌سرویس <code class="small">NESHAN_SERVICE_API_KEY</code> را در <code class="small">.env</code> تنظیم کنید و دکمهٔ زیر را بزنید.</p>
             <div id="buyer-map" class="rounded border bg-white" style="height:320px;z-index:1"></div>
             <div class="form-row mt-2">
                 <div class="form-group col-6 mb-0">
@@ -70,7 +70,7 @@
                     <input type="text" name="longitude" id="buyer-lng" class="form-control form-control-sm text-left" dir="ltr" readonly value="{{ old('longitude', $b?->longitude) }}">
                 </div>
             </div>
-            <button type="button" class="btn btn-outline-primary btn-sm btn-block mt-2" id="btn-buyer-reverse-geo">پیشنهاد آدرس از سیدارمپ (ApiEco)</button>
+            <button type="button" class="btn btn-outline-primary btn-sm btn-block mt-2" id="btn-buyer-reverse-geo">پیشنهاد آدرس از نشان (تبدیل نقطه به آدرس)</button>
         </div>
     </div>
 </div>

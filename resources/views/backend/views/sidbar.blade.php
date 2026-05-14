@@ -1,6 +1,14 @@
 <div class="navigation-menu-body">
     <ul>
         <li class="navigation-divider">صفحات : </li>
+        @if(auth('admin')->user()->is_super)
+        <li>
+            <a class="{{ request()->routeIs('admin.managers.*') ? 'active' : '' }}" href="{{ route('admin.managers.index') }}">
+                <i class="nav-link-icon" data-feather="shield"></i>
+                <span>مدیران و دسترسی‌ها</span>
+            </a>
+        </li>
+        @endif
         <li>
             <a class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                 <i class="nav-link-icon" data-feather="bar-chart-2"></i>

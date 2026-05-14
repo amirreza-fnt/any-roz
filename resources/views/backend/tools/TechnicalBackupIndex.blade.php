@@ -15,18 +15,19 @@
 
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-body">
-                <p class="text-muted mb-0">خروجی به‌صورت فایل‌های <strong>CSV</strong> (سازگار با Excel) داخل یک بستهٔ <strong>ZIP</strong>؛ برای هر بخش اگر داده‌ای نباشد، فایل آن در بسته قرار نمی‌گیرد و پیام هشدار نمایش داده می‌شود.</p>
+                <p class="text-muted mb-0">خروجی به‌صورت فایل‌های <strong>CSV</strong> (سازگار با Excel) داخل یک بستهٔ <strong>ZIP</strong>؛ برای هر بخش اگر داده‌ای نباشد، فایل آن در بسته قرار نمی‌گیرد. ابتدا بخش‌ها را انتخاب کنید، سپس ساخت بسته را بزنید؛ مرورگر به‌صورت خودکار به صفحهٔ دانلود هدایت می‌شود.</p>
             </div>
         </div>
 
-        <form method="get" action="{{ route('admin.technical-backup.download') }}" class="card border-0 shadow-sm">
+        <form method="post" action="{{ route('admin.technical-backup.prepare') }}" class="card border-0 shadow-sm">
+            @csrf
             <div class="card-body">
                 <h6 class="font-weight-bold mb-3">انتخاب بخش‌ها</h6>
                 <div class="row">
                     @foreach ($moduleLabels as $key => $label)
                         <div class="col-md-4 mb-2">
                             <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" name="modules[]" value="{{ $key }}" id="mod-{{ $key }}" checked>
+                                <input type="checkbox" class="custom-control-input" name="modules[]" value="{{ $key }}" id="mod-{{ $key }}">
                                 <label class="custom-control-label" for="mod-{{ $key }}">{{ $label }}</label>
                             </div>
                         </div>
@@ -34,7 +35,7 @@
                 </div>
             </div>
             <div class="card-footer bg-white">
-                <button type="submit" class="btn btn-primary">دانلود بستهٔ پشتیبان</button>
+                <button type="submit" class="btn btn-primary">ساخت بسته و شروع دانلود</button>
             </div>
         </form>
     </div>

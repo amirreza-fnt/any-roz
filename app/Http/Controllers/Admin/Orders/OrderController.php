@@ -56,7 +56,7 @@ class OrderController extends Controller
 
     private function renderOrderView(Order $order, bool $hideFinancials)
     {
-        $order->load(['user', 'items.product', 'histories.user']);
+        $order->load(['user', 'items.product', 'histories.user', 'histories.admin']);
         $listBackRoute = $hideFinancials
             ? route('admin.orders.supply')
             : route('admin.orders.index');
@@ -85,7 +85,8 @@ class OrderController extends Controller
 
         OrderHistory::create([
             'order_id' => $order->id,
-            'user_id' => auth()->id(),
+            'user_id' => null,
+            'admin_id' => auth('admin')->id(),
             'status' => 'shipping_status_changed',
             'note' => $note,
         ]);
@@ -108,7 +109,8 @@ class OrderController extends Controller
 
             OrderHistory::create([
                 'order_id' => $order->id,
-                'user_id' => auth()->id(),
+                'user_id' => null,
+                'admin_id' => auth('admin')->id(),
                 'status' => 'recalled_from_supply',
                 'note' => ! empty($data['note']) ? $data['note'] : 'بازگشت از بخش تأمین',
             ]);
@@ -121,7 +123,8 @@ class OrderController extends Controller
 
             OrderHistory::create([
                 'order_id' => $order->id,
-                'user_id' => auth()->id(),
+                'user_id' => null,
+                'admin_id' => auth('admin')->id(),
                 'status' => 'sent_to_supply',
                 'note' => ! empty($data['note']) ? $data['note'] : 'ارسال به بخش تأمین',
             ]);

@@ -251,7 +251,22 @@
             changeMonth: true,
             changeYear: true,
             showButtonPanel: true,
-            yearRange: (y0 - 25) + ':' + (y0 + 10)
+            yearRange: (y0 - 25) + ':' + (y0 + 10),
+            defaultDate: cal ? new cal() : undefined,
+            onSelect: function () {
+                var $el = $('#sale_date_shamsi');
+                setTimeout(function () {
+                    var d = $el.datepicker('getDate');
+                    if (! d || typeof d.getFullYear !== 'function') {
+                        return;
+                    }
+                    var y = d.getFullYear();
+                    var m = d.getMonth() + 1;
+                    var da = d.getDate();
+                    var p = function (n) { return n < 10 ? '0' + n : String(n); };
+                    $el.val(y + '/' + p(m) + '/' + p(da));
+                }, 0);
+            }
         }));
     }
 
