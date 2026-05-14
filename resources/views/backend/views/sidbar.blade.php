@@ -39,7 +39,7 @@
                 @endadmincan
                 @adminany(['accounting.journal.view', 'accounting.journal.create', 'accounting.journal.edit', 'accounting.journal.delete'])
                 <li>
-                    <a class="{{ request()->routeIs('admin.accounting.journal.*') ? 'active' : '' }}" href="{{ route('admin.accounting.journal.index') }}">دفتر اسناد مجزا</a>
+                    <a class="{{ request()->routeIs('admin.accounting.standalone.*', 'admin.accounting.journal.*') ? 'active' : '' }}" href="{{ route('admin.accounting.standalone.index') }}">حسابداری مجزا</a>
                 </li>
                 @endadminany
                 @admincan('accounting.site_sales.view')

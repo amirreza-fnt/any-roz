@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AccountingJournalEntry;
 use App\Support\JalaliCalendar;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -75,6 +76,8 @@ class AccountingJournalEntryController extends Controller
             'document_no' => ['nullable', 'string', 'max:64'],
             'title' => ['required', 'string', 'max:255'],
             'kind' => ['required', 'string', Rule::in(AccountingJournalEntry::kinds())],
+            'subsidiary_code' => ['nullable', 'string', 'max:64'],
+            'counterparty' => ['nullable', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'description' => ['nullable', 'string', 'max:8000'],
         ]);
@@ -87,7 +90,7 @@ class AccountingJournalEntryController extends Controller
             ]);
         }
 
-        return [
+        $out = [
             'document_date' => $documentDate->toDateString(),
             'document_no' => $base['document_no'] ?: null,
             'title' => $base['title'],
@@ -95,5 +98,14 @@ class AccountingJournalEntryController extends Controller
             'amount' => $base['amount'],
             'description' => $base['description'] ?? null,
         ];
+
+        if (Schema::hasColumn('accounting_journal_entries', 'subsidiary_code')) {
+            $out['subsidiary_code'] = $base['subsidiary_code'] ?: null;
+        }
+        if (Schema::hasColumn('accounting_journal_entries', 'counterparty')) {
+            $out['counterparty'] = $base['counterparty'] ?: null;
+        }
+
+        return $out;
     }
 }

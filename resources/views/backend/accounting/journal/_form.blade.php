@@ -30,6 +30,18 @@
     <input type="text" name="title" class="form-control" value="{{ old('title', $entry?->title) }}" maxlength="255" required>
     @error('title')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
 </div>
+<div class="form-row">
+    <div class="form-group col-md-6">
+        <label>کد معین / تفصیل (اختیاری)</label>
+        <input type="text" name="subsidiary_code" class="form-control text-left" dir="ltr" maxlength="64" value="{{ old('subsidiary_code', $entry?->subsidiary_code) }}" placeholder="مثال: ۵۰۱۰۲">
+        @error('subsidiary_code')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+    </div>
+    <div class="form-group col-md-6">
+        <label>طرف حساب / شخص (اختیاری)</label>
+        <input type="text" name="counterparty" class="form-control" maxlength="255" value="{{ old('counterparty', $entry?->counterparty) }}">
+        @error('counterparty')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+    </div>
+</div>
 <div class="form-group">
     <label>شماره سند (اختیاری)</label>
     <input type="text" name="document_no" class="form-control text-left" dir="ltr" maxlength="64" value="{{ old('document_no', $entry?->document_no) }}">

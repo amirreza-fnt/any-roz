@@ -20,6 +20,7 @@ class AccountingSiteSalesController extends Controller
 
         $snapshot = $analytics->financialSnapshot($from, $to, Order::SOURCE_SITE);
         $daily = $analytics->dailyRevenueSeries($from, $to, Order::SOURCE_SITE);
+        $dailyChart = $analytics->compressDailySeriesForChart($daily);
         $byStatus = $analytics->ordersByShippingStatus($from, $to, Order::SOURCE_SITE);
 
         $q = $analytics->siteOrdersQuery($from, $to);
@@ -45,6 +46,7 @@ class AccountingSiteSalesController extends Controller
             'to' => $to,
             'snapshot' => $snapshot,
             'daily' => $daily,
+            'dailyChart' => $dailyChart,
             'byStatus' => $byStatus,
             'orders' => $orders,
         ]);

@@ -106,4 +106,9 @@ class Order extends Model
     {
         return $this->hasMany(OrderProduct::class);
     }
+
+    public function histories(): HasMany
+    {
+        return $this->hasMany(OrderHistory::class, 'order_id')->orderByDesc('id');
+    }
 }

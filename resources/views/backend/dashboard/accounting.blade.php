@@ -83,8 +83,9 @@
             </div>
             <div class="col-6 col-md-3 mb-2">
                 <div class="card acct-kpi p-3">
-                    <div class="l mb-1">فروش سایت / بازاریابی</div>
+                    <div class="l mb-1">سهم سایت / بازاریابی (جمع = کل فروش دوره)</div>
                     <div class="v small text-dark">{{ number_format($bySource['site']) }} / {{ number_format($bySource['marketing']) }}</div>
+                    <div class="text-muted small mt-1">کل تأییدشده در بازه: {{ number_format($bySource['total'] ?? ($bySource['site'] + $bySource['marketing'])) }} تومان</div>
                 </div>
             </div>
         </div>
@@ -95,7 +96,7 @@
                 <div class="card acct-tile h-100">
                     <div class="card-body d-flex flex-column">
                         <h5 class="mb-2">۱ — برنامهٔ جامع حسابداری</h5>
-                        <p class="lead flex-grow-1">نمودارها، خلاصهٔ روزانه، تفکیک منبع فروش، وضعیت ارسال و خروجی CSV؛ به‌همراه <strong>دفتر اسناد مجزا</strong> برای ثبت هزینه/درآمد خارج از فاکتور سایت.</p>
+                        <p class="lead flex-grow-1">نمودارها، خلاصهٔ روزانه، تفکیک منبع فروش، وضعیت ارسال و خروجی CSV؛ به‌همراه <strong>حسابداری مجزا</strong> برای ثبت هزینه/درآمد و معین خارج از فاکتور سایت.</p>
                         <a href="{{ route('admin.accounting.professional.index', ['j_date_from' => \App\Support\JalaliCalendar::formatShamsiDate($from), 'j_date_to' => \App\Support\JalaliCalendar::formatShamsiDate($to)]) }}" class="btn btn-primary rounded-pill mt-2">ورود</a>
                     </div>
                 </div>
@@ -113,7 +114,7 @@
                 <div class="card acct-tile h-100">
                     <div class="card-body d-flex flex-column">
                         <h5 class="mb-2">۳ — حسابداری فروش سایت</h5>
-                        <p class="lead flex-grow-1">فقط سفارش‌هایی که از خود سایت ثبت شده‌اند؛ فیلتر وضعیت پرداخت و ارسال، جمع مبالغ و خروجی اکسل.</p>
+                        <p class="lead flex-grow-1">فقط فاکتورهایی که <strong>بازاریابی نیستند</strong> (سایت و رکوردهای قدیمی بدون منبع)؛ فیلتر وضعیت، جمع مبالغ و خروجی CSV.</p>
                         <a href="{{ route('admin.accounting.site-sales.index', ['j_date_from' => \App\Support\JalaliCalendar::formatShamsiDate($from), 'j_date_to' => \App\Support\JalaliCalendar::formatShamsiDate($to)]) }}" class="btn btn-outline-primary rounded-pill mt-2">ورود</a>
                     </div>
                 </div>
@@ -174,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function () {
         stroke: { curve: 'smooth', width: 2 },
         colors: ['#2563eb'],
         fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.05 } },
-        xaxis: { categories: categories, labels: { rotate: -45 } },
+        xaxis: { categories: categories, labels: { rotate: -35, hideOverlappingLabels: true, maxHeight: 90, trim: true } },
         yaxis: { labels: { formatter: function (v) { return Math.round(v).toLocaleString('fa-IR'); } } },
         series: series,
     }).render();

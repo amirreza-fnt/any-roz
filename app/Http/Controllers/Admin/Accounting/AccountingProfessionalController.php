@@ -22,6 +22,8 @@ class AccountingProfessionalController extends Controller
 
         $daily = $analytics->dailyRevenueSeries($from, $to, null);
         $monthly = $analytics->monthlyRevenueLast12(null);
+        $dailyChart = $analytics->compressDailySeriesForChart($daily);
+        $monthlyChart = $analytics->compressMonthlySeriesForChart($monthly);
         $byStatus = $analytics->ordersByShippingStatus($from, $to, null);
         $bySource = $analytics->revenueBySource($from, $to);
 
@@ -32,7 +34,9 @@ class AccountingProfessionalController extends Controller
             'snapshotSite' => $snapshotSite,
             'snapshotMkt' => $snapshotMkt,
             'daily' => $daily,
+            'dailyChart' => $dailyChart,
             'monthly' => $monthly,
+            'monthlyChart' => $monthlyChart,
             'byStatus' => $byStatus,
             'bySource' => $bySource,
         ]);

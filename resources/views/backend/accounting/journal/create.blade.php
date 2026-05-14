@@ -11,7 +11,8 @@
             <h4 class="mb-1">ثبت سند جدید</h4>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.accounting.journal.index') }}">دفتر مجزا</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.accounting.standalone.index') }}">حسابداری مجزا</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.accounting.journal.index') }}">فهرست اسناد</a></li>
                     <li class="breadcrumb-item active">درج</li>
                 </ol>
             </nav>

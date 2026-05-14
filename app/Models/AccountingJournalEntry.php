@@ -18,6 +18,8 @@ class AccountingJournalEntry extends Model
         'document_no',
         'title',
         'kind',
+        'subsidiary_code',
+        'counterparty',
         'amount',
         'description',
         'admin_id',

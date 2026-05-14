@@ -11,7 +11,8 @@
             <h4 class="mb-1">ویرایش سند #{{ $entry->id }}</h4>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.accounting.journal.index') }}">دفتر مجزا</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.accounting.standalone.index') }}">حسابداری مجزا</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.accounting.journal.index') }}">فهرست اسناد</a></li>
                     <li class="breadcrumb-item active">ویرایش</li>
                 </ol>
             </nav>

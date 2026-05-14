@@ -138,6 +138,7 @@ return [
 
         'admin.accounting.professional.index' => 'accounting.professional.view',
         'admin.accounting.professional.export' => 'accounting.professional.export',
+        'admin.accounting.standalone.index' => 'accounting.journal.view',
         'admin.accounting.journal.index' => 'accounting.journal.view',
         'admin.accounting.journal.create' => 'accounting.journal.create',
         'admin.accounting.journal.store' => 'accounting.journal.create',
@@ -302,10 +303,10 @@ return [
             'items' => [
                 ['key' => 'accounting.professional.view', 'label' => 'برنامهٔ جامع حسابداری — مشاهده'],
                 ['key' => 'accounting.professional.export', 'label' => 'برنامهٔ جامع حسابداری — خروجی CSV'],
-                ['key' => 'accounting.journal.view', 'label' => 'دفتر اسناد مجزا — مشاهده'],
-                ['key' => 'accounting.journal.create', 'label' => 'دفتر اسناد مجزا — ثبت سند'],
-                ['key' => 'accounting.journal.edit', 'label' => 'دفتر اسناد مجزا — ویرایش'],
-                ['key' => 'accounting.journal.delete', 'label' => 'دفتر اسناد مجزا — حذف'],
+                ['key' => 'accounting.journal.view', 'label' => 'حسابداری مجزا — مشاهده (داشبورد و فهرست اسناد)'],
+                ['key' => 'accounting.journal.create', 'label' => 'حسابداری مجزا — ثبت سند'],
+                ['key' => 'accounting.journal.edit', 'label' => 'حسابداری مجزا — ویرایش سند'],
+                ['key' => 'accounting.journal.delete', 'label' => 'حسابداری مجزا — حذف سند'],
                 ['key' => 'accounting.site_sales.view', 'label' => 'حسابداری فروش سایت — مشاهده'],
                 ['key' => 'accounting.site_sales.export', 'label' => 'حسابداری فروش سایت — خروجی CSV'],
             ],

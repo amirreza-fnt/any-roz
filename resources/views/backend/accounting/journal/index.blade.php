@@ -5,12 +5,12 @@
     <div class="container-fluid">
         <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <div>
-                <h4 class="mb-1">دفتر اسناد حسابداری مجزا</h4>
+                <h4 class="mb-1">فهرست اسناد — حسابداری مجزا</h4>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0">
                         <li class="breadcrumb-item"><a href="{{ route('admin.dashboard.accounting') }}">حسابداری</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('admin.accounting.professional.index') }}">برنامهٔ جامع</a></li>
-                        <li class="breadcrumb-item active">دفتر مجزا</li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.accounting.standalone.index') }}">حسابداری مجزا</a></li>
+                        <li class="breadcrumb-item active">فهرست اسناد</li>
                     </ol>
                 </nav>
             </div>
@@ -20,7 +20,7 @@
         </div>
 
         <div class="alert alert-info border-0 shadow-sm mb-3">
-            این بخش کاملاً مستقل از فاکتورهای سایت است؛ برای ثبت هزینه‌های جانبی، درآمدهای خارج از فروش آنلاین، تعدیل‌ها و یادداشت‌های مالی استفاده کنید. اعداد گزارش «جامع» همچنان از فاکتورها محاسبه می‌شوند و این اسناد در آینده می‌توانند به گزارش‌های ترکیبی متصل شوند.
+            این بخش کاملاً مستقل از فاکتورهای سایت است؛ برای ثبت هزینه‌های جانبی، درآمدهای خارج از فروش آنلاین، تعدیل‌ها و یادداشت‌های مالی با فیلدهای معین و طرف حساب استفاده کنید. گزارش «جامع» همچنان از فاکتورها (سایت + بازاریابی) محاسبه می‌شود.
         </div>
 
         <div class="row mb-3">
@@ -55,6 +55,8 @@
                             <th>نوع</th>
                             <th class="text-left" dir="ltr">مبلغ</th>
                             <th>شماره سند</th>
+                            <th>معین</th>
+                            <th>طرف حساب</th>
                             <th>ثبت‌کننده</th>
                             <th></th>
                         </tr>
@@ -68,6 +70,8 @@
                                 <td><span class="badge badge-light border">{{ \App\Models\AccountingJournalEntry::kindLabel($e->kind) }}</span></td>
                                 <td class="text-left font-weight-bold" dir="ltr">{{ number_format((float) $e->amount) }}</td>
                                 <td class="text-monospace small" dir="ltr">{{ $e->document_no ?? '—' }}</td>
+                                <td class="text-monospace small" dir="ltr">{{ $e->subsidiary_code ?? '—' }}</td>
+                                <td class="small">{{ $e->counterparty ?? '—' }}</td>
                                 <td class="small">{{ $e->admin ? trim($e->admin->first_name.' '.$e->admin->last_name) : '—' }}</td>
                                 <td class="text-nowrap">
                                     @admincan('accounting.journal.edit')
@@ -83,7 +87,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="8" class="text-center text-muted py-4">هنوز سندی ثبت نشده است.</td></tr>
+                            <tr><td colspan="10" class="text-center text-muted py-4">هنوز سندی ثبت نشده است.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

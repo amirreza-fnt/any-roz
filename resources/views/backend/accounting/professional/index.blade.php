@@ -29,7 +29,7 @@
             <div class="d-flex flex-wrap gap-2">
                 <a href="{{ route('admin.accounting.professional.export', request()->only(['j_date_from','j_date_to','date_from','date_to'])) }}" class="btn btn-success rounded-pill">خروجی CSV خلاصه</a>
                 @adminany(['accounting.journal.view', 'accounting.journal.create'])
-                <a href="{{ route('admin.accounting.journal.index') }}" class="btn btn-outline-primary rounded-pill">دفتر اسناد مجزا</a>
+                <a href="{{ route('admin.accounting.standalone.index') }}" class="btn btn-outline-primary rounded-pill">حسابداری مجزا</a>
                 @endadminany
                 @if(Route::has('admin.technical-backup.index'))
                 <a href="{{ route('admin.technical-backup.index') }}" class="btn btn-outline-light border rounded-pill text-dark" onclick="return confirm('به صفحهٔ پشتیبان‌گیری فنی بروید؟');">پشتیبان‌گیری داده‌ها</a>
@@ -82,8 +82,9 @@
                     <div class="card-body">
                         <div id="chart-source"></div>
                         <ul class="list-unstyled small mb-0 mt-2 text-muted">
-                            <li><strong class="text-dark">سایت:</strong> {{ number_format($snapshotSite['revenue_final']) }} تومان — {{ $snapshotSite['order_count'] }} سفارش</li>
+                            <li><strong class="text-dark">سایت و غیر بازاریابی:</strong> {{ number_format($snapshotSite['revenue_final']) }} تومان — {{ $snapshotSite['order_count'] }} سفارش</li>
                             <li><strong class="text-dark">بازاریابی:</strong> {{ number_format($snapshotMkt['revenue_final']) }} تومان — {{ $snapshotMkt['order_count'] }} سفارش</li>
+                            <li class="mt-2 mb-0 small">در نمودار، «سایت» یعنی باقیماندهٔ کل پس از کم کردن فروش بازاریابی (شامل فاکتورهای قدیمی بدون فیلد منبع).</li>
                         </ul>
                     </div>
                 </div>
@@ -100,6 +101,11 @@
                     <div class="card-body"><div id="chart-monthly"></div></div>
                 </div>
             </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white font-weight-bold">روند روزانهٔ فروش (سایت + بازاریابی) — محور زمان فشرده برای بازه‌های بلند</div>
+            <div class="card-body"><div id="chart-daily-prof" style="min-height:280px;"></div></div>
         </div>
 
         <div class="card border-0 shadow-sm mb-4">
@@ -145,10 +151,11 @@
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof ApexCharts === 'undefined') return;
     var bySource = @json($bySource);
-    if ((bySource.site + bySource.marketing) > 0) {
+    var tot = typeof bySource.total !== 'undefined' ? bySource.total : (bySource.site + bySource.marketing);
+    if (tot > 0) {
         new ApexCharts(document.querySelector('#chart-source'), {
             chart: { type: 'donut', height: 280 },
-            labels: ['فروش سایت', 'فروش بازاریابی'],
+            labels: ['فروش سایت و غیر بازاریابی', 'فروش بازاریابی'],
             series: [bySource.site, bySource.marketing],
             legend: { position: 'bottom' },
             colors: ['#0ea5e9', '#a855f7'],
@@ -171,18 +178,45 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelector('#chart-status').innerHTML = '<p class="text-muted small p-3 mb-0">داده‌ای برای نمودار وضعیت نیست.</p>';
     }
 
-    var monthly = @json($monthly);
+    var monthly = @json($monthlyChart ?? $monthly);
     if (monthly.length) {
         new ApexCharts(document.querySelector('#chart-monthly'), {
             chart: { type: 'bar', height: 280, toolbar: { show: false } },
             plotOptions: { bar: { borderRadius: 6, columnWidth: '55%' } },
-            xaxis: { categories: monthly.map(function (m) { return m.ym_label || m.ym; }) },
+            xaxis: {
+                categories: monthly.map(function (m) { return m.ym_label || m.ym; }),
+                labels: { rotate: -35, hideOverlappingLabels: true, maxHeight: 100, trim: true }
+            },
             series: [{ name: 'فروش', data: monthly.map(function (m) { return m.revenue; }) }],
             colors: ['#4f46e5'],
             dataLabels: { enabled: false },
         }).render();
     } else {
         document.querySelector('#chart-monthly').innerHTML = '<p class="text-muted small p-3 mb-0">داده‌ای برای نمودار ماهانه نیست.</p>';
+    }
+
+    var dailyChart = @json($dailyChart ?? $daily);
+    var elDaily = document.querySelector('#chart-daily-prof');
+    if (elDaily && dailyChart && dailyChart.length) {
+        new ApexCharts(elDaily, {
+            chart: { type: 'area', height: 280, toolbar: { show: false }, fontFamily: 'inherit' },
+            stroke: { curve: 'smooth', width: 2 },
+            colors: ['#4f46e5', '#0d9488'],
+            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.06 } },
+            dataLabels: { enabled: false },
+            xaxis: {
+                categories: dailyChart.map(function (r) { return r.d_label || r.d; }),
+                labels: { rotate: -35, hideOverlappingLabels: true, maxHeight: 110, trim: true }
+            },
+            yaxis: { labels: { formatter: function (v) { return Math.round(v).toLocaleString('fa-IR'); } } },
+            series: [
+                { name: 'فروش', data: dailyChart.map(function (r) { return r.revenue; }) },
+                { name: 'بهای تمام‌شدهٔ تخمینی', data: dailyChart.map(function (r) { return r.cogs; }) },
+            ],
+            legend: { position: 'top' },
+        }).render();
+    } else if (elDaily) {
+        elDaily.innerHTML = '<p class="text-muted small p-3 mb-0">داده‌ای برای نمودار روزانه نیست.</p>';
     }
 
     if (typeof feather !== 'undefined') feather.replace();

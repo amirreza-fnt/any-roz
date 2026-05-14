@@ -21,6 +21,87 @@ class AccountingAnalyticsService
         return Schema::hasTable('orders');
     }
 
+    /**
+     * برای نمودارها: وقتی بازهٔ روزانه زیاد است، نقاط را تجمیع می‌کند تا برچسب‌ها روی هم نیفتند.
+     *
+     * @param  list<array{d:string, d_label:string, revenue:float, orders:int, cogs:float}>  $daily
+     * @return list<array{d:string, d_label:string, revenue:float, orders:int, cogs:float}>
+     */
+    public function compressDailySeriesForChart(array $daily, int $maxPoints = 22): array
+    {
+        $n = count($daily);
+        if ($n <= $maxPoints) {
+            return $daily;
+        }
+
+        $bucketSize = (int) max(1, ceil($n / $maxPoints));
+        $out = [];
+        for ($i = 0; $i < $n; $i += $bucketSize) {
+            $slice = array_slice($daily, $i, $bucketSize);
+            if ($slice === []) {
+                break;
+            }
+            $first = $slice[0];
+            $last = $slice[count($slice) - 1];
+            $rev = 0.0;
+            $cogs = 0.0;
+            $orders = 0;
+            foreach ($slice as $row) {
+                $rev += (float) ($row['revenue'] ?? 0);
+                $cogs += (float) ($row['cogs'] ?? 0);
+                $orders += (int) ($row['orders'] ?? 0);
+            }
+            $la = $first['d_label'] ?? $first['d'] ?? '';
+            $lb = $last['d_label'] ?? $last['d'] ?? '';
+            $out[] = [
+                'd' => ($first['d'] ?? '').'…'.($last['d'] ?? ''),
+                'd_label' => $la === $lb ? $la : ($la.'–'.$lb),
+                'revenue' => $rev,
+                'cogs' => $cogs,
+                'orders' => $orders,
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  list<array{ym:string, ym_label:string, revenue:float, orders:int}>  $monthly
+     * @return list<array{ym:string, ym_label:string, revenue:float, orders:int}>
+     */
+    public function compressMonthlySeriesForChart(array $monthly, int $maxPoints = 14): array
+    {
+        $n = count($monthly);
+        if ($n <= $maxPoints) {
+            return $monthly;
+        }
+
+        $bucketSize = (int) max(1, ceil($n / $maxPoints));
+        $out = [];
+        for ($i = 0; $i < $n; $i += $bucketSize) {
+            $slice = array_slice($monthly, $i, $bucketSize);
+            if ($slice === []) {
+                break;
+            }
+            $rev = 0.0;
+            $orders = 0;
+            foreach ($slice as $row) {
+                $rev += (float) ($row['revenue'] ?? 0);
+                $orders += (int) ($row['orders'] ?? 0);
+            }
+            $first = $slice[0];
+            $last = $slice[count($slice) - 1];
+            $out[] = [
+                'ym' => ($first['ym'] ?? '').'…'.($last['ym'] ?? ''),
+                'ym_label' => ($first['ym_label'] ?? '').'–'.($last['ym_label'] ?? ''),
+                'revenue' => $rev,
+                'orders' => $orders,
+            ];
+        }
+
+        return $out;
+    }
+
     public function parsePeriod(Request $request, int $defaultDays = 30): array
     {
         $jFrom = trim((string) $request->input('j_date_from', ''));
@@ -124,7 +205,7 @@ class AccountingAnalyticsService
             ->where('o.shipping_status', '!=', Order::STATUS_CANCELLED);
 
         if ($sourceFilter !== null) {
-            $q->where('o.source', $sourceFilter);
+            $this->applyOrderSourceToJoinQuery($q, $sourceFilter);
         }
 
         $raw = $q->selectRaw('SUM(op.quantity * COALESCE(p.price_buy, 0)) as cogs')->value('cogs');
@@ -216,7 +297,7 @@ class AccountingAnalyticsService
             ->where('shipping_status', '!=', Order::STATUS_CANCELLED);
 
         if ($sourceFilter !== null) {
-            $q->where('source', $sourceFilter);
+            $this->applyOrderSourceToEloquent($q, $sourceFilter);
         }
 
         $grouped = $q->get(['created_at', 'payment_date', 'final_amount', 'id'])
@@ -264,22 +345,23 @@ class AccountingAnalyticsService
     }
 
     /**
-     * @return array{site: float, marketing: float}
+     * @return array{site: float, marketing: float, total: float}
      */
     public function revenueBySource(Carbon $from, Carbon $to): array
     {
         if (! $this->ordersAvailable()) {
-            return ['site' => 0.0, 'marketing' => 0.0];
+            return ['site' => 0.0, 'marketing' => 0.0, 'total' => 0.0];
         }
 
         $base = Order::query()
             ->where('shipping_status', '!=', Order::STATUS_CANCELLED);
         $this->applyAccountingDateBetween($base, $from, $to);
 
-        $site = (float) (clone $base)->where('source', Order::SOURCE_SITE)->sum('final_amount');
+        $total = (float) (clone $base)->sum('final_amount');
         $mkt = (float) (clone $base)->where('source', Order::SOURCE_MARKETING)->sum('final_amount');
+        $site = max(0.0, $total - $mkt);
 
-        return ['site' => $site, 'marketing' => $mkt];
+        return ['site' => $site, 'marketing' => $mkt, 'total' => $total];
     }
 
     /**
@@ -292,7 +374,10 @@ class AccountingAnalyticsService
         }
 
         return Order::query()
-            ->where('source', Order::SOURCE_SITE)
+            ->where(function ($w) {
+                $w->whereNull('source')
+                    ->orWhere('source', '!=', Order::SOURCE_MARKETING);
+            })
             ->whereRaw('COALESCE(payment_date, created_at) >= ?', [$from->copy()->startOfDay()])
             ->whereRaw('COALESCE(payment_date, created_at) <= ?', [$to->copy()->endOfDay()])
             ->with(['user'])
@@ -303,9 +388,7 @@ class AccountingAnalyticsService
     private function orderScope(Builder $q, Carbon $from, Carbon $to, ?string $sourceFilter): Builder
     {
         $this->applyAccountingDateBetween($q, $from, $to);
-        if ($sourceFilter !== null) {
-            $q->where('source', $sourceFilter);
-        }
+        $this->applyOrderSourceToEloquent($q, $sourceFilter);
 
         return $q;
     }
@@ -314,6 +397,43 @@ class AccountingAnalyticsService
     {
         $q->whereRaw('COALESCE(payment_date, created_at) >= ?', [$from->copy()->startOfDay()])
             ->whereRaw('COALESCE(payment_date, created_at) <= ?', [$to->copy()->endOfDay()]);
+    }
+
+    /**
+     * «فروش سایت» = هر فاکتوری که بازاریابی نباشد (شامل null/قدیمی).
+     *
+     * @param  \Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder  $q
+     */
+    private function applyOrderSourceToJoinQuery($q, ?string $sourceFilter, string $column = 'o.source'): void
+    {
+        if ($sourceFilter === null) {
+            return;
+        }
+        if ($sourceFilter === Order::SOURCE_SITE) {
+            $q->where(function ($w) use ($column) {
+                $w->whereNull($column)
+                    ->orWhere($column, '!=', Order::SOURCE_MARKETING);
+            });
+
+            return;
+        }
+        $q->where($column, $sourceFilter);
+    }
+
+    private function applyOrderSourceToEloquent(Builder $q, ?string $sourceFilter, string $column = 'source'): void
+    {
+        if ($sourceFilter === null) {
+            return;
+        }
+        if ($sourceFilter === Order::SOURCE_SITE) {
+            $q->where(function ($w) use ($column) {
+                $w->whereNull($column)
+                    ->orWhere($column, '!=', Order::SOURCE_MARKETING);
+            });
+
+            return;
+        }
+        $q->where($column, $sourceFilter);
     }
 
     /**

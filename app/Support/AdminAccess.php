@@ -31,6 +31,7 @@ final class AdminAccess
         ['route' => 'admin.marketing.buyers.index', 'perm' => 'marketing.buyers.view'],
         ['route' => 'admin.marketing.sales.index', 'perm' => 'marketing.sales.view'],
         ['route' => 'admin.accounting.marketing-sales.index', 'perm' => 'accounting.marketing_sales.view_list'],
+        ['route' => 'admin.accounting.standalone.index', 'perm' => 'accounting.journal.view'],
         ['route' => 'admin.accounting.journal.index', 'perm' => 'accounting.journal.view'],
     ];
 

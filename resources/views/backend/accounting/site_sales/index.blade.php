@@ -26,8 +26,8 @@
         </div>
 
         <div class="acct-site-hero">
-            <h1>فقط سفارش‌های ثبت‌شده از کانال «سایت»</h1>
-            <p class="mb-0">فاکتورهایی که منبع آن‌ها «سایت» است اینجا لیست می‌شوند. برای فروش ثبت‌شده توسط بازاریابان پس از تأیید حسابداری، منبع «بازاریابی» می‌شود و در گزارش جامع دیده می‌شود نه در این صفحه. <strong>تاریخ نمایش داده‌شده:</strong> در صورت وجود «تاریخ پرداخت»، همان به شمسی نشان داده می‌شود؛ وگرنه تاریخ ثبت فاکتور.</p>
+            <h1>فروش کانال غیر بازاریابی (سایت و سفارش‌های قدیمی)</h1>
+            <p class="mb-0">فاکتورهایی که <strong>بازاریابی</strong> نباشند (شامل سفارش‌های قدیمی بدون فیلد منبع) در این گزارش دیده می‌شوند. فروش تأییدشدهٔ بازاریابان با منبع «بازاریابی» فقط در «برنامهٔ جامع» و داشبورد حسابداری لحاظ می‌شود. <strong>تاریخ نمایش:</strong> در صورت وجود «تاریخ پرداخت» همان به شمسی است؛ وگرنه تاریخ ثبت فاکتور.</p>
         </div>
 
         <form method="get" class="card border-0 shadow-sm mb-3">
@@ -127,13 +127,16 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof ApexCharts === 'undefined') return;
-    var daily = @json($daily);
+    var daily = @json($dailyChart ?? $daily);
     if (!daily.length) return;
     new ApexCharts(document.querySelector('#acct-site-daily'), {
         chart: { type: 'line', height: 240, toolbar: { show: false } },
         stroke: { curve: 'smooth', width: 2 },
-        colors: ['#059669'],
-        xaxis: { categories: daily.map(function (r) { return r.d_label || r.d; }) },
+        colors: ['#059669', '#0f766e'],
+        xaxis: {
+            categories: daily.map(function (r) { return r.d_label || r.d; }),
+            labels: { rotate: -35, hideOverlappingLabels: true, maxHeight: 100, trim: true }
+        },
         series: [
             { name: 'فروش', data: daily.map(function (r) { return r.revenue; }) },
             { name: 'بهای تمام‌شدهٔ تخمینی', data: daily.map(function (r) { return r.cogs; }) },
