@@ -20,6 +20,7 @@
         </li>
         @endadmincan
 
+
         @adminany(['dashboard.accounting.view', 'accounting.professional.view', 'accounting.professional.export', 'accounting.journal.view', 'accounting.journal.create', 'accounting.journal.edit', 'accounting.journal.delete', 'accounting.site_sales.view', 'accounting.site_sales.export', 'accounting.marketing_sales.view_list', 'accounting.marketing_sales.view_detail', 'accounting.marketing_sales.approve', 'accounting.marketing_sales.reject'])
         <li class="{{ request()->routeIs('admin.dashboard.accounting') || request()->routeIs('admin.accounting.*') ? 'open' : '' }}">
             <a href="javascript:;">

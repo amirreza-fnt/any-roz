@@ -113,6 +113,8 @@
                             <th class="text-left" dir="ltr">مبلغ</th>
                             <th>معین</th>
                             <th>طرف حساب</th>
+                            <th>دسته</th>
+                            <th>تسویه</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -125,9 +127,11 @@
                                 <td class="text-left font-weight-bold" dir="ltr">{{ number_format((float) $e->amount) }}</td>
                                 <td class="small text-monospace" dir="ltr">{{ $e->subsidiary_code ?? '—' }}</td>
                                 <td class="small">{{ $e->counterparty ?? '—' }}</td>
+                                <td class="small">{{ $e->category ?? '—' }}</td>
+                                <td class="small">{{ $e->journal_payment_method ?? '—' }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="text-center text-muted py-4">هنوز سندی ثبت نشده است.</td></tr>
+                            <tr><td colspan="9" class="text-center text-muted py-4">هنوز سندی ثبت نشده است.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

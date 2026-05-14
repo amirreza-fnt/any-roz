@@ -57,6 +57,9 @@
                             <th>شماره سند</th>
                             <th>معین</th>
                             <th>طرف حساب</th>
+                            <th>دسته</th>
+                            <th>تسویه</th>
+                            <th class="text-left" dir="ltr">مالیات</th>
                             <th>ثبت‌کننده</th>
                             <th></th>
                         </tr>
@@ -72,6 +75,9 @@
                                 <td class="text-monospace small" dir="ltr">{{ $e->document_no ?? '—' }}</td>
                                 <td class="text-monospace small" dir="ltr">{{ $e->subsidiary_code ?? '—' }}</td>
                                 <td class="small">{{ $e->counterparty ?? '—' }}</td>
+                                <td class="small">{{ $e->category ?? '—' }}</td>
+                                <td class="small">{{ $e->journal_payment_method ?? '—' }}</td>
+                                <td class="text-left small" dir="ltr">{{ $e->vat_amount !== null ? number_format((float) $e->vat_amount) : '—' }}</td>
                                 <td class="small">{{ $e->admin ? trim($e->admin->first_name.' '.$e->admin->last_name) : '—' }}</td>
                                 <td class="text-nowrap">
                                     @admincan('accounting.journal.edit')
@@ -87,7 +93,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="10" class="text-center text-muted py-4">هنوز سندی ثبت نشده است.</td></tr>
+                            <tr><td colspan="13" class="text-center text-muted py-4">هنوز سندی ثبت نشده است.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

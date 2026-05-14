@@ -87,7 +87,7 @@ class AccountingSiteSalesController extends Controller
                 'items_count', 'user_id',
             ]);
             foreach ($orders as $o) {
-                $ev = $o->payment_date ?? $o->created_at;
+                $ev = $o->accountingEventAt();
                 $evStr = $ev instanceof \Carbon\CarbonInterface
                     ? JalaliCalendar::formatShamsiDateTime(\Carbon\Carbon::instance($ev))
                     : '';

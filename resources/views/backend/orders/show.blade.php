@@ -159,7 +159,6 @@
             <div class="d-flex flex-wrap gap-2 align-items-center">
                 <form action="{{ route('admin.orders.toggle-supply', $order) }}" method="post" class="d-flex flex-wrap align-items-center gap-2" onsubmit="return confirm(@json($order->sent_to_supply ? 'این فاکتور از بخش تأمین خارج شود؟' : 'این فاکتور به بخش تأمین ارسال شود؟'));">
                     @csrf
-                    @method('PATCH')
                     <input type="text" name="note" class="form-control form-control-sm" style="min-width:200px" placeholder="یادداشت (اختیاری)">
                     <button type="submit" class="btn btn-sm {{ $order->sent_to_supply ? 'btn-outline-warning' : 'btn-primary' }}">
                         {{ $order->sent_to_supply ? 'بازگشت از بخش تأمین' : 'ارسال به بخش تأمین' }}
@@ -176,7 +175,6 @@
                 <h6 class="mb-2">تغییر وضعیت سفارش</h6>
                 <form action="{{ route('admin.orders.update-status', $order) }}" method="post" class="form-row align-items-end">
                     @csrf
-                    @method('PATCH')
                     <div class="form-group col-md-3">
                         <label class="small text-muted">وضعیت</label>
                         <select name="shipping_status" class="form-control">

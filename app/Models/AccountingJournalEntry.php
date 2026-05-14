@@ -20,6 +20,12 @@ class AccountingJournalEntry extends Model
         'kind',
         'subsidiary_code',
         'counterparty',
+        'category',
+        'journal_payment_method',
+        'external_reference',
+        'cost_center',
+        'vat_rate',
+        'vat_amount',
         'amount',
         'description',
         'admin_id',
@@ -28,6 +34,8 @@ class AccountingJournalEntry extends Model
     protected $casts = [
         'document_date' => 'date',
         'amount' => 'decimal:2',
+        'vat_rate' => 'decimal:2',
+        'vat_amount' => 'decimal:2',
     ];
 
     public function admin(): BelongsTo

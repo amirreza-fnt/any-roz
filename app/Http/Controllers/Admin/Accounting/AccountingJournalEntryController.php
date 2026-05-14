@@ -39,7 +39,7 @@ class AccountingJournalEntryController extends Controller
 
         AccountingJournalEntry::create($data);
 
-        message('success', 'سند در دفتر حسابداری مجزا ثبت شد.');
+        message('success', 'سند حسابداری مجزا ثبت شد.');
 
         return redirect()->route('admin.accounting.journal.index');
     }
@@ -78,6 +78,12 @@ class AccountingJournalEntryController extends Controller
             'kind' => ['required', 'string', Rule::in(AccountingJournalEntry::kinds())],
             'subsidiary_code' => ['nullable', 'string', 'max:64'],
             'counterparty' => ['nullable', 'string', 'max:255'],
+            'category' => ['nullable', 'string', 'max:64'],
+            'journal_payment_method' => ['nullable', 'string', 'max:64'],
+            'external_reference' => ['nullable', 'string', 'max:128'],
+            'cost_center' => ['nullable', 'string', 'max:64'],
+            'vat_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'vat_amount' => ['nullable', 'numeric', 'min:0'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'description' => ['nullable', 'string', 'max:8000'],
         ]);
@@ -104,6 +110,24 @@ class AccountingJournalEntryController extends Controller
         }
         if (Schema::hasColumn('accounting_journal_entries', 'counterparty')) {
             $out['counterparty'] = $base['counterparty'] ?: null;
+        }
+        if (Schema::hasColumn('accounting_journal_entries', 'category')) {
+            $out['category'] = $base['category'] ?: null;
+        }
+        if (Schema::hasColumn('accounting_journal_entries', 'journal_payment_method')) {
+            $out['journal_payment_method'] = $base['journal_payment_method'] ?: null;
+        }
+        if (Schema::hasColumn('accounting_journal_entries', 'external_reference')) {
+            $out['external_reference'] = $base['external_reference'] ?: null;
+        }
+        if (Schema::hasColumn('accounting_journal_entries', 'cost_center')) {
+            $out['cost_center'] = $base['cost_center'] ?: null;
+        }
+        if (Schema::hasColumn('accounting_journal_entries', 'vat_rate')) {
+            $out['vat_rate'] = $base['vat_rate'] !== null && $base['vat_rate'] !== '' ? $base['vat_rate'] : null;
+        }
+        if (Schema::hasColumn('accounting_journal_entries', 'vat_amount')) {
+            $out['vat_amount'] = $base['vat_amount'] !== null && $base['vat_amount'] !== '' ? $base['vat_amount'] : null;
         }
 
         return $out;

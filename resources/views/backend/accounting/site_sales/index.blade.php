@@ -27,7 +27,7 @@
 
         <div class="acct-site-hero">
             <h1>فروش کانال غیر بازاریابی (سایت و سفارش‌های قدیمی)</h1>
-            <p class="mb-0">فاکتورهایی که <strong>بازاریابی</strong> نباشند (شامل سفارش‌های قدیمی بدون فیلد منبع) در این گزارش دیده می‌شوند. فروش تأییدشدهٔ بازاریابان با منبع «بازاریابی» فقط در «برنامهٔ جامع» و داشبورد حسابداری لحاظ می‌شود. <strong>تاریخ نمایش:</strong> در صورت وجود «تاریخ پرداخت» همان به شمسی است؛ وگرنه تاریخ ثبت فاکتور.</p>
+            <p class="mb-0">فقط فاکتورهایی که در دیتابیس با <strong>منبع «site»</strong> ثبت شده‌اند یا فیلد منبع خالی است (سفارش قدیمی)؛ فروش تأییدشدهٔ بازاریابی با منبع <code>marketing</code> اینجا نیست. <strong>تاریخ گزارش:</strong> اگر «تاریخ پرداخت» غیرواقعی باشد، از تاریخ ثبت فاکتور استفاده می‌شود تا سفارش از بازه حذف نشود.</p>
         </div>
 
         <form method="get" class="card border-0 shadow-sm mb-3">
@@ -82,7 +82,8 @@
                         <tr>
                             <th>#</th>
                             <th>شماره فاکتور</th>
-                            <th>تاریخ (شمسی)</th>
+                            <th>تاریخ رویداد (شمسی)</th>
+                            <th>منبع</th>
                             <th>مشتری</th>
                             <th>پرداخت</th>
                             <th>ارسال</th>
@@ -95,7 +96,8 @@
                             <tr>
                                 <td>{{ $o->id }}</td>
                                 <td class="text-monospace" dir="ltr">{{ $o->order_number }}</td>
-                                <td class="text-monospace small" dir="ltr">{{ \App\Support\JalaliCalendar::formatShamsiDateTime($o->payment_date ?? $o->created_at) }}</td>
+                                <td class="text-monospace small" dir="ltr">{{ \App\Support\JalaliCalendar::formatShamsiDateTime($o->accountingEventAt()) }}</td>
+                                <td><span class="badge badge-light border text-monospace">{{ $o->source ?: '—' }}</span></td>
                                 <td>{{ $o->user?->name ?? '—' }}</td>
                                 <td><span class="badge badge-secondary">{{ \App\Models\Order::paymentStatusLabel($o->payment_status) }}</span></td>
                                 <td><span class="badge badge-info">{{ \App\Models\Order::shippingStatusLabel($o->shipping_status) }}</span></td>
@@ -109,7 +111,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="8" class="text-center text-muted py-4">فاکتوری در این بازه یافت نشد.</td></tr>
+                            <tr><td colspan="9" class="text-center text-muted py-4">فاکتوری در این بازه یافت نشد.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

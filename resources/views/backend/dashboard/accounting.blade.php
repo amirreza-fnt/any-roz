@@ -54,7 +54,7 @@
             <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
                 <div>
                     <h1>مرکز یکپارچهٔ حسابداری</h1>
-                    <p>اینجا نمای کلی تمام فروش ثبت‌شده در سایت (فاکتورها) و بخش‌های تخصصی کنار هم قرار دارد. نیازی به دانش قبلی حسابداری نیست؛ هر کارت توضیح می‌دهد چه کاری انجام می‌دهد و اعداد به زبان ساده فروش، تخفیف و سود تخمینی را نشان می‌دهند.</p>
+                    <p>اینجا نمای کلی تمام فروش ثبت‌شده در سایت (فاکتورها) و بخش‌های تخصصی کنار هم قرار دارد. نیازی به دانش قبلی حسابداری نیست؛ هر کارت توضیح می‌دهد چه کاری انجام می‌دهد و اعداد به زبان ساده فروش، تخفیف و سود تخمینی را نشان می‌دهند. اگر «تاریخ پرداخت» یک فاکتور غیرواقعی باشد، برای محاسبهٔ بازه از تاریخ ثبت فاکتور استفاده می‌شود تا فروش سایت از گزارش حذف نشود.</p>
                 </div>
                 @if(($pendingMarketingSales ?? 0) > 0)
                     <span class="badge-soft">فروش بازاریابی در انتظار: {{ $pendingMarketingSales }}</span>
@@ -114,7 +114,7 @@
                 <div class="card acct-tile h-100">
                     <div class="card-body d-flex flex-column">
                         <h5 class="mb-2">۳ — حسابداری فروش سایت</h5>
-                        <p class="lead flex-grow-1">فقط فاکتورهایی که <strong>بازاریابی نیستند</strong> (سایت و رکوردهای قدیمی بدون منبع)؛ فیلتر وضعیت، جمع مبالغ و خروجی CSV.</p>
+                        <p class="lead flex-grow-1">فقط فاکتورهای <strong>منبع site</strong> (و رکوردهای بدون منبع)؛ فیلتر وضعیت، جمع مبالغ و خروجی CSV. اگر «تاریخ پرداخت» نامعتبر باشد، برای بازهٔ گزارش از تاریخ ثبت استفاده می‌شود.</p>
                         <a href="{{ route('admin.accounting.site-sales.index', ['j_date_from' => \App\Support\JalaliCalendar::formatShamsiDate($from), 'j_date_to' => \App\Support\JalaliCalendar::formatShamsiDate($to)]) }}" class="btn btn-outline-primary rounded-pill mt-2">ورود</a>
                     </div>
                 </div>

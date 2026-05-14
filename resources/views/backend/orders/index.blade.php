@@ -94,7 +94,6 @@
                                     <td class="align-middle mini-form-status">
                                         <form action="{{ route('admin.orders.update-status', $o) }}" method="post" class="mb-1">
                                             @csrf
-                                            @method('PATCH')
                                             <div class="d-flex flex-wrap align-items-center gap-1">
                                                 <select name="shipping_status" class="form-control form-control-sm" title="وضعیت">
                                                     @foreach (\App\Models\Order::SHIPPING_STATUSES as $st)
@@ -128,7 +127,6 @@
                                             @if ($o->sent_to_supply)
                                                 <form action="{{ route('admin.orders.toggle-supply', $o) }}" method="post" class="d-inline" onsubmit="return confirm('فاکتور از بخش تأمین بازگردانده شود؟');">
                                                     @csrf
-                                                    @method('PATCH')
                                                     <button type="submit" class="btn btn-sm btn-outline-warning" title="بازگردانی از تأمین">بازگردانی</button>
                                                 </form>
                                             @endif

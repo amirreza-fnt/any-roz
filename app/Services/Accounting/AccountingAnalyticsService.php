@@ -194,14 +194,16 @@ class AccountingAnalyticsService
             return 0.0;
         }
 
+        $ev = $this->sqlOrderAccountingEventDatetime('o.payment_date', 'o.created_at');
+
         $q = DB::table('order_products as op')
             ->join('orders as o', 'o.id', '=', 'op.order_id')
             ->leftJoin('products as p', function ($join) {
                 $join->on('p.id', '=', 'op.product_id')
                     ->whereNull('p.deleted_at');
             })
-            ->whereRaw('COALESCE(o.payment_date, o.created_at) >= ?', [$from->copy()->startOfDay()])
-            ->whereRaw('COALESCE(o.payment_date, o.created_at) <= ?', [$to->copy()->endOfDay()])
+            ->whereRaw($ev.' >= ?', [$from->copy()->startOfDay()])
+            ->whereRaw($ev.' <= ?', [$to->copy()->endOfDay()])
             ->where('o.shipping_status', '!=', Order::STATUS_CANCELLED);
 
         if ($sourceFilter !== null) {
@@ -228,7 +230,7 @@ class AccountingAnalyticsService
 
         $byDay = [];
         foreach ($rows as $o) {
-            $event = $o->payment_date ?? $o->created_at;
+            $event = $o->accountingEventAt();
             $d = $event->toDateString();
             if (! isset($byDay[$d])) {
                 $byDay[$d] = ['revenue' => 0.0, 'orders' => 0, 'ids' => []];
@@ -253,7 +255,7 @@ class AccountingAnalyticsService
                     if (! $order) {
                         continue;
                     }
-                    $event = $order->payment_date ?? $order->created_at;
+                    $event = $order->accountingEventAt();
                     $d = $event->toDateString();
                     $buy = (int) ($line->product?->price_buy ?? 0);
                     $cogsByDay[$d] = ($cogsByDay[$d] ?? 0) + ($line->quantity * $buy);
@@ -292,8 +294,10 @@ class AccountingAnalyticsService
 
         $from = now()->subMonths(11)->startOfMonth()->startOfDay();
 
+        $ev = $this->sqlOrderAccountingEventDatetime('payment_date', 'created_at');
+
         $q = Order::query()
-            ->whereRaw('COALESCE(payment_date, created_at) >= ?', [$from])
+            ->whereRaw($ev.' >= ?', [$from])
             ->where('shipping_status', '!=', Order::STATUS_CANCELLED);
 
         if ($sourceFilter !== null) {
@@ -302,9 +306,7 @@ class AccountingAnalyticsService
 
         $grouped = $q->get(['created_at', 'payment_date', 'final_amount', 'id'])
             ->groupBy(function (Order $o) {
-                $dt = $o->payment_date ?? $o->created_at;
-
-                return $dt->format('Y-m');
+                return $o->accountingEventAt()->format('Y-m');
             });
 
         $out = [];
@@ -359,7 +361,7 @@ class AccountingAnalyticsService
 
         $total = (float) (clone $base)->sum('final_amount');
         $mkt = (float) (clone $base)->where('source', Order::SOURCE_MARKETING)->sum('final_amount');
-        $site = max(0.0, $total - $mkt);
+        $site = (float) (clone $base)->siteChannelAccounting()->sum('final_amount');
 
         return ['site' => $site, 'marketing' => $mkt, 'total' => $total];
     }
@@ -373,14 +375,10 @@ class AccountingAnalyticsService
             return Order::query()->whereRaw('0 = 1');
         }
 
-        return Order::query()
-            ->where(function ($w) {
-                $w->whereNull('source')
-                    ->orWhere('source', '!=', Order::SOURCE_MARKETING);
-            })
-            ->whereRaw('COALESCE(payment_date, created_at) >= ?', [$from->copy()->startOfDay()])
-            ->whereRaw('COALESCE(payment_date, created_at) <= ?', [$to->copy()->endOfDay()])
-            ->with(['user'])
+        $q = Order::query()->siteChannelAccounting();
+        $this->applyAccountingDateBetween($q, $from, $to);
+
+        return $q->with(['user'])
             ->withCount('items')
             ->orderByDesc('id');
     }
@@ -395,13 +393,22 @@ class AccountingAnalyticsService
 
     private function applyAccountingDateBetween(Builder $q, Carbon $from, Carbon $to): void
     {
-        $q->whereRaw('COALESCE(payment_date, created_at) >= ?', [$from->copy()->startOfDay()])
-            ->whereRaw('COALESCE(payment_date, created_at) <= ?', [$to->copy()->endOfDay()]);
+        $ev = $this->sqlOrderAccountingEventDatetime('payment_date', 'created_at');
+        $q->whereRaw($ev.' >= ?', [$from->copy()->startOfDay()])
+            ->whereRaw($ev.' <= ?', [$to->copy()->endOfDay()]);
     }
 
     /**
-     * «فروش سایت» = هر فاکتوری که بازاریابی نباشد (شامل null/قدیمی).
-     *
+     * عبارت SQL برای «تاریخ رویداد مالی» فاکتور (نادیده گرفتن payment_date غیرواقعی).
+     */
+    private function sqlOrderAccountingEventDatetime(string $paymentColumn, string $createdColumn): string
+    {
+        return 'COALESCE(IF('.$paymentColumn.' IS NOT NULL '
+            .'AND '.$paymentColumn." >= '1990-01-01 00:00:00' "
+            .'AND '.$paymentColumn." <= '2100-12-31 23:59:59', ".$paymentColumn.', NULL), '.$createdColumn.')';
+    }
+
+    /**
      * @param  \Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder  $q
      */
     private function applyOrderSourceToJoinQuery($q, ?string $sourceFilter, string $column = 'o.source'): void
@@ -411,8 +418,9 @@ class AccountingAnalyticsService
         }
         if ($sourceFilter === Order::SOURCE_SITE) {
             $q->where(function ($w) use ($column) {
-                $w->whereNull($column)
-                    ->orWhere($column, '!=', Order::SOURCE_MARKETING);
+                $w->where($column, Order::SOURCE_SITE)
+                    ->orWhereNull($column)
+                    ->orWhere($column, '');
             });
 
             return;
@@ -426,10 +434,7 @@ class AccountingAnalyticsService
             return;
         }
         if ($sourceFilter === Order::SOURCE_SITE) {
-            $q->where(function ($w) use ($column) {
-                $w->whereNull($column)
-                    ->orWhere($column, '!=', Order::SOURCE_MARKETING);
-            });
+            $q->siteChannelAccounting();
 
             return;
         }

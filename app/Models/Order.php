@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -95,6 +98,35 @@ class Order extends Model
             'refunded' => 'بازگشت وجه',
             default => $status,
         };
+    }
+
+    /**
+     * تاریخ رویداد مالی برای گزارش حسابداری: اگر «تاریخ پرداخت» معتبر (۱۹۹۰–۲۱۰۰ میلادی) باشد همان، وگرنه تاریخ ثبت سفارش.
+     * (تاریخ پرداخت خراب/اشتباه باعث حذف فاکتور از بازهٔ گزارش نمی‌شود.)
+     */
+    public function accountingEventAt(): CarbonInterface
+    {
+        $created = $this->created_at ? Carbon::parse($this->created_at) : now();
+
+        if ($this->payment_date) {
+            $p = Carbon::parse($this->payment_date);
+            $y = (int) $p->format('Y');
+            if ($y >= 1990 && $y <= 2100) {
+                return $p;
+            }
+        }
+
+        return $created;
+    }
+
+    /** فاکتورهای کانال سایت (شامل رکوردهای قدیمی بدون فیلد منبع). */
+    public function scopeSiteChannelAccounting(Builder $query): Builder
+    {
+        return $query->where(function ($w) {
+            $w->where('source', self::SOURCE_SITE)
+                ->orWhereNull('source')
+                ->orWhere('source', '');
+        });
     }
 
     public function user(): BelongsTo

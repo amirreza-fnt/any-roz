@@ -82,9 +82,9 @@
                     <div class="card-body">
                         <div id="chart-source"></div>
                         <ul class="list-unstyled small mb-0 mt-2 text-muted">
-                            <li><strong class="text-dark">سایت و غیر بازاریابی:</strong> {{ number_format($snapshotSite['revenue_final']) }} تومان — {{ $snapshotSite['order_count'] }} سفارش</li>
+                            <li><strong class="text-dark">سایت (site):</strong> {{ number_format($snapshotSite['revenue_final']) }} تومان — {{ $snapshotSite['order_count'] }} سفارش</li>
                             <li><strong class="text-dark">بازاریابی:</strong> {{ number_format($snapshotMkt['revenue_final']) }} تومان — {{ $snapshotMkt['order_count'] }} سفارش</li>
-                            <li class="mt-2 mb-0 small">در نمودار، «سایت» یعنی باقیماندهٔ کل پس از کم کردن فروش بازاریابی (شامل فاکتورهای قدیمی بدون فیلد منبع).</li>
+                            <li class="mt-2 mb-0 small">«سایت» در اینجا یعنی فاکتور با <code>source = site</code> یا بدون منبع؛ «بازاریابی» یعنی <code>marketing</code>. برای بازهٔ زمانی، تاریخ پرداخت فقط اگر معتبر باشد استفاده می‌شود.</li>
                         </ul>
                     </div>
                 </div>
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (tot > 0) {
         new ApexCharts(document.querySelector('#chart-source'), {
             chart: { type: 'donut', height: 280 },
-            labels: ['فروش سایت و غیر بازاریابی', 'فروش بازاریابی'],
+            labels: ['فروش سایت (site)', 'فروش بازاریابی'],
             series: [bySource.site, bySource.marketing],
             legend: { position: 'bottom' },
             colors: ['#0ea5e9', '#a855f7'],
