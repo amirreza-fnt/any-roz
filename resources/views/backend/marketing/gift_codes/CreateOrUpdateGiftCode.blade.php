@@ -1,15 +1,20 @@
 @extends('backend.views.view')
 
 @php
+    use App\Support\JalaliCalendar;
     $isEdit = ($type ?? '') === 'edit';
     $gc = $giftCode;
     $selCats = old('category_ids', $isEdit && $gc ? ($gc->category_ids ?? []) : []);
     $selProds = old('product_ids', $isEdit && $gc ? ($gc->product_ids ?? []) : []);
+    $selUsers = old('user_ids', $isEdit && $gc ? ($gc->user_ids ?? []) : []);
     $vt = old('value_type', $isEdit && $gc ? $gc->value_type : 'fixed');
     $ap = old('applies_to', $isEdit && $gc ? $gc->applies_to : 'all');
+    $startsShamsi = old('starts_at_shamsi', $isEdit && $gc?->starts_at ? JalaliCalendar::formatShamsiDate($gc->starts_at) : '');
+    $expiresShamsi = old('expires_at_shamsi', $isEdit && $gc?->expires_at ? JalaliCalendar::formatShamsiDate($gc->expires_at) : '');
 @endphp
 
 @push('styles')
+<link rel="stylesheet" href="{{ asset('assets/back-end/vendors/datepicker-jalali/bootstrap-datepicker.min.css') }}" type="text/css">
 <link rel="stylesheet" href="{{ asset('assets/back-end/vendors/select2/css/select2.min.css') }}" type="text/css">
 <style>
     .select2-container { width: 100% !important; }
@@ -113,14 +118,31 @@
                         </div>
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label>شروع اعتبار</label>
-                                <input type="datetime-local" name="starts_at" class="form-control" value="{{ old('starts_at', $isEdit && $gc?->starts_at ? $gc->starts_at->format('Y-m-d\TH:i') : '') }}">
+                                <label>شروع اعتبار (شمسی)</label>
+                                <input type="text" name="starts_at_shamsi" autocomplete="off" class="form-control text-left gc-shamsi-date" dir="ltr" value="{{ $startsShamsi }}" placeholder="مثلاً ۱۴۰۳/۰۱/۰۱">
+                                @error('starts_at_shamsi')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                             </div>
                             <div class="form-group col-md-6">
-                                <label>پایان اعتبار</label>
-                                <input type="datetime-local" name="expires_at" class="form-control" value="{{ old('expires_at', $isEdit && $gc?->expires_at ? $gc->expires_at->format('Y-m-d\TH:i') : '') }}">
+                                <label>پایان اعتبار (شمسی)</label>
+                                <input type="text" name="expires_at_shamsi" autocomplete="off" class="form-control text-left gc-shamsi-date" dir="ltr" value="{{ $expiresShamsi }}" placeholder="مثلاً ۱۴۰۳/۱۲/۲۹">
+                                @error('expires_at_shamsi')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="gc-card">
+                    <div class="hd">محدودیت کاربران</div>
+                    <div class="bd">
+                        <p class="text-muted small mb-2">در صورت خالی ماندن، کد برای همهٔ کاربران قابل استفاده است؛ در غیر این صورت فقط برای کاربران انتخاب‌شده اعمال می‌شود.</p>
+                        <label>انتخاب کاربران</label>
+                        <select name="user_ids[]" id="gift-users" class="select2-example" multiple style="width:100%">
+                            @foreach ($users as $u)
+                                <option value="{{ $u->id }}" @selected(in_array($u->id, (array) $selUsers, true))>{{ $u->name }} — {{ $u->email }}</option>
+                            @endforeach
+                        </select>
+                        @error('user_ids')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                        @error('user_ids.*')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>
                 </div>
 
@@ -172,6 +194,7 @@
 
 @push('scripts')
 <script src="{{ asset('assets/back-end/vendors/select2/js/select2.min.js') }}"></script>
+<script src="{{ asset('assets/back-end/vendors/datepicker-jalali/bootstrap-datepicker.fa.min.js') }}"></script>
 <script>
 (function () {
     function randCode() {
@@ -201,9 +224,21 @@
 
     function initS2() {
         if (typeof $.fn.select2 === 'undefined') return;
-        $('#gift-cats, #gift-prods').select2({ dir: 'rtl', width: '100%', placeholder: 'انتخاب کنید...' });
+        $('#gift-cats, #gift-prods, #gift-users').select2({ dir: 'rtl', width: '100%', placeholder: 'انتخاب کنید...' });
     }
     initS2();
+
+    if (typeof $.fn.datepicker !== 'undefined') {
+        $('input.gc-shamsi-date').datepicker({
+            dateFormat: 'yy/mm/dd',
+            showOtherMonths: true,
+            selectOtherMonths: true,
+            changeMonth: true,
+            changeYear: true,
+            showButtonPanel: true
+        });
+    }
+
     if (typeof feather !== 'undefined') feather.replace();
 })();
 </script>

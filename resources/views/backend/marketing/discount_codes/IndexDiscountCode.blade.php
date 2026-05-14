@@ -71,7 +71,7 @@
                                     <td class="align-middle">
                                         <span class="dc-pill {{ $d->status === 'active' ? 'dc-active' : 'dc-inactive' }}">{{ $d->status === 'active' ? 'فعال' : 'غیرفعال' }}</span>
                                     </td>
-                                    <td class="align-middle small text-muted">{{ $d->expires_at?->format('Y/m/d') ?? '—' }}</td>
+                                    <td class="align-middle small text-muted">{{ $d->expires_at ? \App\Support\JalaliCalendar::formatShamsiDate($d->expires_at) : '—' }}</td>
                                     <td class="align-middle text-nowrap table-actions">
                                         <a href="{{ route('admin.discount-codes.edit', $d) }}" class="btn btn-sm btn-outline-primary"><i data-feather="edit-2" class="width-16 height-16"></i></a>
                                         <form action="{{ route('admin.discount-codes.toggle-status', $d) }}" method="post" class="d-inline">

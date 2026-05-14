@@ -1,15 +1,19 @@
 @extends('backend.views.view')
 
 @php
+    use App\Support\JalaliCalendar;
     $isEdit = ($type ?? '') === 'edit';
     $dc = $discountCode;
     $selCats = old('category_ids', $isEdit && $dc ? ($dc->category_ids ?? []) : []);
     $selProds = old('product_ids', $isEdit && $dc ? ($dc->product_ids ?? []) : []);
     $dt = old('discount_type', $isEdit && $dc ? $dc->discount_type : 'percent');
     $ap = old('applies_to', $isEdit && $dc ? $dc->applies_to : 'all');
+    $startsShamsi = old('starts_at_shamsi', $isEdit && $dc?->starts_at ? JalaliCalendar::formatShamsiDate($dc->starts_at) : '');
+    $expiresShamsi = old('expires_at_shamsi', $isEdit && $dc?->expires_at ? JalaliCalendar::formatShamsiDate($dc->expires_at) : '');
 @endphp
 
 @push('styles')
+<link rel="stylesheet" href="{{ asset('assets/back-end/vendors/datepicker-jalali/bootstrap-datepicker.min.css') }}" type="text/css">
 <link rel="stylesheet" href="{{ asset('assets/back-end/vendors/select2/css/select2.min.css') }}" type="text/css">
 <style>
     .select2-container { width: 100% !important; }
@@ -113,12 +117,14 @@
                         </div>
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label>شروع اعتبار</label>
-                                <input type="datetime-local" name="starts_at" class="form-control" value="{{ old('starts_at', $isEdit && $dc?->starts_at ? $dc->starts_at->format('Y-m-d\TH:i') : '') }}">
+                                <label>شروع اعتبار (شمسی)</label>
+                                <input type="text" name="starts_at_shamsi" autocomplete="off" class="form-control text-left dc-shamsi-date" dir="ltr" value="{{ $startsShamsi }}" placeholder="مثلاً ۱۴۰۳/۰۱/۰۱">
+                                @error('starts_at_shamsi')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                             </div>
                             <div class="form-group col-md-6">
-                                <label>پایان اعتبار</label>
-                                <input type="datetime-local" name="expires_at" class="form-control" value="{{ old('expires_at', $isEdit && $dc?->expires_at ? $dc->expires_at->format('Y-m-d\TH:i') : '') }}">
+                                <label>پایان اعتبار (شمسی)</label>
+                                <input type="text" name="expires_at_shamsi" autocomplete="off" class="form-control text-left dc-shamsi-date" dir="ltr" value="{{ $expiresShamsi }}" placeholder="مثلاً ۱۴۰۳/۱۲/۲۹">
+                                @error('expires_at_shamsi')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                             </div>
                         </div>
                     </div>
@@ -172,6 +178,7 @@
 
 @push('scripts')
 <script src="{{ asset('assets/back-end/vendors/select2/js/select2.min.js') }}"></script>
+<script src="{{ asset('assets/back-end/vendors/datepicker-jalali/bootstrap-datepicker.fa.min.js') }}"></script>
 <script>
 (function () {
     function randCode() {
@@ -201,6 +208,18 @@
     if (typeof $.fn.select2 !== 'undefined') {
         $('#disc-cats, #disc-prods').select2({ dir: 'rtl', width: '100%', placeholder: 'انتخاب کنید...' });
     }
+
+    if (typeof $.fn.datepicker !== 'undefined') {
+        $('input.dc-shamsi-date').datepicker({
+            dateFormat: 'yy/mm/dd',
+            showOtherMonths: true,
+            selectOtherMonths: true,
+            changeMonth: true,
+            changeYear: true,
+            showButtonPanel: true
+        });
+    }
+
     if (typeof feather !== 'undefined') feather.replace();
 })();
 </script>

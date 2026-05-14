@@ -67,11 +67,14 @@
                                         @elseif($g->applies_to === 'categories') دسته‌های انتخابی ({{ count($g->category_ids ?? []) }})
                                         @else محصولات انتخابی ({{ count($g->product_ids ?? []) }})
                                         @endif
+                                        @if (! empty($g->user_ids))
+                                            <span class="d-block text-primary mt-1">کاربران: {{ count($g->user_ids) }}</span>
+                                        @endif
                                     </td>
                                     <td class="align-middle">
                                         <span class="gc-pill {{ $g->status === 'active' ? 'gc-active' : 'gc-inactive' }}">{{ $g->status === 'active' ? 'فعال' : 'غیرفعال' }}</span>
                                     </td>
-                                    <td class="align-middle small text-muted">{{ $g->expires_at?->format('Y/m/d') ?? '—' }}</td>
+                                    <td class="align-middle small text-muted">{{ $g->expires_at ? \App\Support\JalaliCalendar::formatShamsiDate($g->expires_at) : '—' }}</td>
                                     <td class="align-middle text-nowrap table-actions">
                                         <a href="{{ route('admin.gift-codes.edit', $g) }}" class="btn btn-sm btn-outline-primary"><i data-feather="edit-2" class="width-16 height-16"></i></a>
                                         <form action="{{ route('admin.gift-codes.toggle-status', $g) }}" method="post" class="d-inline">

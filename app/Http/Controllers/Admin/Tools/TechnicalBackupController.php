@@ -313,7 +313,7 @@ class TechnicalBackupController extends Controller
         if ($rows->isEmpty()) {
             return null;
         }
-        $headers = ['id', 'code', 'title', 'value_type', 'amount', 'percent', 'max_amount', 'min_order_amount', 'usage_limit', 'used_count', 'per_user_limit', 'starts_at', 'expires_at', 'applies_to', 'category_ids_json', 'product_ids_json', 'status', 'deleted_at', 'created_at', 'updated_at'];
+        $headers = ['id', 'code', 'title', 'value_type', 'amount', 'percent', 'max_amount', 'min_order_amount', 'usage_limit', 'used_count', 'per_user_limit', 'starts_at', 'expires_at', 'applies_to', 'category_ids_json', 'product_ids_json', 'user_ids_json', 'status', 'deleted_at', 'created_at', 'updated_at'];
         $data = [];
         foreach ($rows as $r) {
             $data[] = [
@@ -333,6 +333,7 @@ class TechnicalBackupController extends Controller
                 $r->applies_to,
                 json_encode($r->category_ids ?? [], JSON_UNESCAPED_UNICODE),
                 json_encode($r->product_ids ?? [], JSON_UNESCAPED_UNICODE),
+                json_encode($r->user_ids ?? [], JSON_UNESCAPED_UNICODE),
                 $r->status,
                 (string) $r->deleted_at,
                 (string) $r->created_at,

@@ -28,6 +28,7 @@ class GiftCode extends Model
         'applies_to',
         'category_ids',
         'product_ids',
+        'user_ids',
         'status',
     ];
 
@@ -43,6 +44,7 @@ class GiftCode extends Model
         'expires_at' => 'datetime',
         'category_ids' => 'array',
         'product_ids' => 'array',
+        'user_ids' => 'array',
     ];
 
     public function isActive(): bool

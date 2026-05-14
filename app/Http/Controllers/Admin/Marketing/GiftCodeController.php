@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\GiftCode;
 use App\Models\Product;
+use App\Models\User;
+use App\Support\JalaliCalendar;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class GiftCodeController extends Controller
 {
@@ -24,8 +27,9 @@ class GiftCodeController extends Controller
         $giftCode = null;
         $categories = Category::orderBy('title')->get();
         $products = Product::orderBy('title')->get();
+        $users = User::query()->orderBy('name')->orderBy('id')->get();
 
-        return view('backend.marketing.gift_codes.CreateOrUpdateGiftCode', compact('type', 'giftCode', 'categories', 'products'));
+        return view('backend.marketing.gift_codes.CreateOrUpdateGiftCode', compact('type', 'giftCode', 'categories', 'products', 'users'));
     }
 
     public function store(Request $request)
@@ -50,8 +54,9 @@ class GiftCodeController extends Controller
         $giftCode = $gift_code;
         $categories = Category::orderBy('title')->get();
         $products = Product::orderBy('title')->get();
+        $users = User::query()->orderBy('name')->orderBy('id')->get();
 
-        return view('backend.marketing.gift_codes.CreateOrUpdateGiftCode', compact('type', 'giftCode', 'categories', 'products'));
+        return view('backend.marketing.gift_codes.CreateOrUpdateGiftCode', compact('type', 'giftCode', 'categories', 'products', 'users'));
     }
 
     public function update(Request $request, GiftCode $gift_code)
@@ -98,13 +103,15 @@ class GiftCodeController extends Controller
             'min_order_amount' => 'nullable|integer|min:0',
             'usage_limit' => 'nullable|integer|min:1',
             'per_user_limit' => 'nullable|integer|min:1',
-            'starts_at' => 'nullable|date',
-            'expires_at' => 'nullable|date|after_or_equal:starts_at',
+            'starts_at_shamsi' => 'nullable|string|max:32',
+            'expires_at_shamsi' => 'nullable|string|max:32',
             'applies_to' => ['required', Rule::in(['all', 'categories', 'products'])],
             'category_ids' => 'nullable|array',
             'category_ids.*' => 'integer|exists:categories,id',
             'product_ids' => 'nullable|array',
             'product_ids.*' => 'integer|exists:products,id',
+            'user_ids' => 'nullable|array',
+            'user_ids.*' => 'integer|exists:users,id',
             'status' => ['required', Rule::in(['active', 'inactive'])],
         ]);
 
@@ -141,13 +148,47 @@ class GiftCodeController extends Controller
         $base['per_user_limit'] = (int) ($base['per_user_limit'] ?? 1);
         $base['category_ids'] = $base['category_ids'] ? array_values(array_unique(array_map('intval', $base['category_ids']))) : null;
         $base['product_ids'] = $base['product_ids'] ? array_values(array_unique(array_map('intval', $base['product_ids']))) : null;
+        $base['user_ids'] = ! empty($base['user_ids']) ? array_values(array_unique(array_map('intval', $base['user_ids']))) : null;
 
-        $base['usage_limit'] = isset($base['usage_limit']) && $base['usage_limit'] !== '' ? (int) $base['usage_limit'] : null;
-        foreach (['starts_at', 'expires_at'] as $k) {
-            if (array_key_exists($k, $base) && $base[$k] === '') {
-                $base[$k] = null;
+        $startsRaw = trim((string) ($base['starts_at_shamsi'] ?? ''));
+        $expiresRaw = trim((string) ($base['expires_at_shamsi'] ?? ''));
+        unset($base['starts_at_shamsi'], $base['expires_at_shamsi']);
+
+        $startsAt = null;
+        $expiresAt = null;
+        if ($startsRaw !== '') {
+            if (! preg_match('/^\d{4}\/\d{1,2}\/\d{1,2}$/', $startsRaw)) {
+                throw ValidationException::withMessages([
+                    'starts_at_shamsi' => 'فرمت تاریخ شروع باید به صورت سال/ماه/روز باشد.',
+                ]);
+            }
+            try {
+                $startsAt = JalaliCalendar::parseShamsiDateStartOfDay($startsRaw);
+            } catch (\InvalidArgumentException $e) {
+                throw ValidationException::withMessages(['starts_at_shamsi' => $e->getMessage()]);
             }
         }
+        if ($expiresRaw !== '') {
+            if (! preg_match('/^\d{4}\/\d{1,2}\/\d{1,2}$/', $expiresRaw)) {
+                throw ValidationException::withMessages([
+                    'expires_at_shamsi' => 'فرمت تاریخ پایان باید به صورت سال/ماه/روز باشد.',
+                ]);
+            }
+            try {
+                $expiresAt = JalaliCalendar::parseShamsiDateEndOfDay($expiresRaw);
+            } catch (\InvalidArgumentException $e) {
+                throw ValidationException::withMessages(['expires_at_shamsi' => $e->getMessage()]);
+            }
+        }
+        if ($startsAt && $expiresAt && $expiresAt->lt($startsAt)) {
+            throw ValidationException::withMessages([
+                'expires_at_shamsi' => 'تاریخ پایان باید بعد از تاریخ شروع باشد.',
+            ]);
+        }
+        $base['starts_at'] = $startsAt;
+        $base['expires_at'] = $expiresAt;
+
+        $base['usage_limit'] = isset($base['usage_limit']) && $base['usage_limit'] !== '' ? (int) $base['usage_limit'] : null;
         if (($base['value_type'] ?? '') === 'percent') {
             $base['max_amount'] = isset($base['max_amount']) && $base['max_amount'] !== '' ? (int) $base['max_amount'] : null;
         }
