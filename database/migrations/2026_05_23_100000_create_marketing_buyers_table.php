@@ -15,9 +15,10 @@ return new class extends Migration
             $table->string('last_name', 120);
             $table->string('phone', 32);
             $table->text('address')->nullable();
-            $table->foreignId('province_id')->nullable()->constrained('provinces')->nullOnDelete();
-            $table->foreignId('city_id')->nullable()->constrained('cities')->nullOnDelete();
-            $table->string('store_name', 255)->nullable();
+            $table->unsignedInteger('province_id')->nullable();
+            $table->unsignedInteger('city_id')->nullable();
+            $table->foreign('province_id')->references('id')->on('provinces')->nullOnDelete();
+            $table->foreign('city_id')->references('id')->on('cities')->nullOnDelete();$table->string('store_name', 255)->nullable();
             $table->string('postal_code', 20)->nullable();
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
