@@ -7,6 +7,8 @@ use App\Models\Order;
 use App\Models\OrderHistory;
 use App\Models\OrderProduct;
 use App\Models\User;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -121,7 +123,7 @@ class ApproveMarketingSaleService
             'payment_status' => 'paid',
             'payment_method' => Str::limit((string) ($sale->payment_method ?? ''), 50),
             'payment_transaction_id' => null,
-            'payment_date' => $sale->sale_date?->startOfDay() ?? now(),
+            'payment_date' => $this->safeOrderPaymentDate($sale),
             'shipping_status' => Order::STATUS_PENDING_REVIEW,
             'shipping_method' => 'فروش بازاریابی',
             'shipping_address' => $buyer->address ?: '—',
@@ -167,6 +169,26 @@ class ApproveMarketingSaleService
         }
 
         return $order;
+    }
+
+    /**
+     * تاریخ پرداخت فاکتور باید میلادی معتبر برای MySQL باشد؛ دادهٔ قدیمی/اشتباه فروش
+     * (مثلاً سال شمسی به‌جای میلادی در فیلد) را به «امروز» برمی‌گردانیم.
+     */
+    private function safeOrderPaymentDate(MarketingSale $sale): Carbon
+    {
+        $d = $sale->sale_date;
+        if ($d === null) {
+            return now()->startOfDay();
+        }
+
+        $c = $d instanceof CarbonInterface ? Carbon::instance($d) : Carbon::parse($d);
+        $y = (int) $c->year;
+        if ($y < 1990 || $y > 2100) {
+            return now()->startOfDay();
+        }
+
+        return $c->copy()->startOfDay();
     }
 
     private function composeOrderNotes(MarketingSale $sale): string

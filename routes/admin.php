@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminManagerController;
+use App\Http\Controllers\Admin\Accounting\AccountingJournalEntryController;
 use App\Http\Controllers\Admin\Accounting\AccountingProfessionalController;
 use App\Http\Controllers\Admin\Accounting\AccountingSiteSalesController;
 use App\Http\Controllers\Admin\Accounting\MarketingSaleReviewController;
@@ -52,6 +53,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::prefix('accounting')->name('accounting.')->group(function () {
                 Route::get('professional', [AccountingProfessionalController::class, 'index'])->name('professional.index');
                 Route::get('professional/export', [AccountingProfessionalController::class, 'export'])->name('professional.export');
+                Route::resource('journal', AccountingJournalEntryController::class)->except(['show']);
                 Route::get('site-sales', [AccountingSiteSalesController::class, 'index'])->name('site-sales.index');
                 Route::get('site-sales/export', [AccountingSiteSalesController::class, 'export'])->name('site-sales.export');
 

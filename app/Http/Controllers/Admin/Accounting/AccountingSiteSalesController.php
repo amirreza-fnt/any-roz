@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Accounting;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Support\JalaliCalendar;
 use App\Services\Accounting\AccountingAnalyticsService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -79,15 +80,19 @@ class AccountingSiteSalesController extends Controller
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF");
             fputcsv($out, [
-                'id', 'order_number', 'created_at', 'payment_status', 'shipping_status',
+                'id', 'order_number', 'event_datetime_shamsi', 'payment_status', 'shipping_status',
                 'final_amount', 'total_amount', 'discount_amount', 'shipping_fee', 'shipping_cost', 'insurance_cost',
                 'items_count', 'user_id',
             ]);
             foreach ($orders as $o) {
+                $ev = $o->payment_date ?? $o->created_at;
+                $evStr = $ev instanceof \Carbon\CarbonInterface
+                    ? JalaliCalendar::formatShamsiDateTime(\Carbon\Carbon::instance($ev))
+                    : '';
                 fputcsv($out, [
                     $o->id,
                     $o->order_number,
-                    (string) $o->created_at,
+                    $evStr,
                     $o->payment_status,
                     $o->shipping_status,
                     (string) $o->final_amount,

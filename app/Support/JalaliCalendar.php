@@ -101,6 +101,7 @@ final class JalaliCalendar
         if ($jm < 1 || $jm > 12 || $jd < 1 || $jd > 31) {
             throw new InvalidArgumentException('تاریخ شمسی نامعتبر است.');
         }
+        self::assertReasonableJalaliYear($jy);
         [$gy, $gm, $gd] = self::jalaliToGregorian($jy, $jm, $jd);
 
         return Carbon::create($gy, $gm, $gd, 0, 0, 0);
@@ -125,6 +126,34 @@ final class JalaliCalendar
         );
 
         return sprintf('%04d/%02d/%02d', $jy, $jm, $jd);
+    }
+
+    /** نمایش سال/ماه شمسی برای سرستون ماهانه (بر اساس یک روز میلادی در آن ماه). */
+    public static function formatShamsiYearMonth(?Carbon $date): string
+    {
+        if ($date === null) {
+            return '';
+        }
+        [$jy, $jm] = self::gregorianToJalali(
+            (int) $date->year,
+            (int) $date->month,
+            (int) $date->day
+        );
+
+        return sprintf('%04d/%02d', $jy, $jm);
+    }
+
+    /**
+     * سال شمسی باید در بازهٔ معقول باشد؛ در غیر این صورت اگر کاربر سال میلادی (مثلاً ۲۰۲۶)
+     * را به‌جای شمسی وارد کند، تبدیل به سال میلادی غیرواقعی (مثل ۲۶۴۷) می‌شود.
+     */
+    private static function assertReasonableJalaliYear(int $jy): void
+    {
+        if ($jy < 1300 || $jy > 1500) {
+            throw new InvalidArgumentException(
+                'سال شمسی باید بین ۱۳۰۰ تا ۱۵۰۰ باشد. اگر سال میلادی (مثلاً ۲۰۲۶) وارد کرده‌اید، از تقویم شمسی و سال ۱۴۰۴ استفاده کنید.'
+            );
+        }
     }
 
     /** Current Jalali year (e.g. 1404) for datepicker yearRange. */

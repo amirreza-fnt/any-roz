@@ -1,6 +1,7 @@
 @extends('backend.views.view')
 
 @push('styles')
+<link rel="stylesheet" href="{{ asset('assets/back-end/vendors/datepicker-jalali/bootstrap-datepicker.min.css') }}" type="text/css">
 <style>
     .acct-pro-hero { border-radius: 20px; padding: 1.75rem 2rem; background: linear-gradient(120deg,#1e1b4b,#4338ca,#6366f1); color:#fff; margin-bottom:1.5rem; box-shadow:0 18px 40px rgba(49,46,129,.3); }
     .acct-pro-hero h1 { font-size:1.35rem; font-weight:800; margin:0 0 .4rem; }
@@ -26,7 +27,10 @@
                 </nav>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                <a href="{{ route('admin.accounting.professional.export', request()->only(['date_from','date_to'])) }}" class="btn btn-success rounded-pill">خروجی CSV خلاصه</a>
+                <a href="{{ route('admin.accounting.professional.export', request()->only(['j_date_from','j_date_to','date_from','date_to'])) }}" class="btn btn-success rounded-pill">خروجی CSV خلاصه</a>
+                @adminany(['accounting.journal.view', 'accounting.journal.create'])
+                <a href="{{ route('admin.accounting.journal.index') }}" class="btn btn-outline-primary rounded-pill">دفتر اسناد مجزا</a>
+                @endadminany
                 @if(Route::has('admin.technical-backup.index'))
                 <a href="{{ route('admin.technical-backup.index') }}" class="btn btn-outline-light border rounded-pill text-dark" onclick="return confirm('به صفحهٔ پشتیبان‌گیری فنی بروید؟');">پشتیبان‌گیری داده‌ها</a>
                 @endif
@@ -36,18 +40,12 @@
         <div class="acct-pro-hero">
             <h1>دید ۳۶۰ درجه بر فروش و سود تخمینی</h1>
             <p>«فروش نهایی» یعنی مبلغی که مشتری واقعاً پرداخت کرده (بعد از تخفیف). «بهای تمام‌شدهٔ تخمینی» از روی <strong>قیمت خرید فعلی</strong> کالا در کارت محصول ضرب در تعداد فروش محاسبه می‌شود — اگر قیمت خرید را پر نکرده باشید، سود واقعی را دست‌کم می‌گیرید. «سود ناخالص تخمینی» = فروش − بهای تمام‌شدهٔ تخمینی (هزینه‌های عملیاتی دیگر اینجا لحاظ نشده‌اند).</p>
+            <p class="mb-0 mt-2 small" style="opacity:.88"><strong>تاریخ گزارش:</strong> اگر برای فاکتور «تاریخ پرداخت» ثبت شده باشد، همان ملاک قرار می‌گیرد؛ در غیر این صورت از «تاریخ ثبت فاکتور» استفاده می‌شود تا فروش بازاریابی با تاریخ واقعی فروش هم‌تراز بماند.</p>
         </div>
 
         <form method="get" class="card border-0 shadow-sm mb-4">
             <div class="card-body row align-items-end">
-                <div class="col-md-3 mb-2 mb-md-0">
-                    <label class="small text-muted">از تاریخ</label>
-                    <input type="date" name="date_from" class="form-control" value="{{ $from->format('Y-m-d') }}">
-                </div>
-                <div class="col-md-3 mb-2 mb-md-0">
-                    <label class="small text-muted">تا تاریخ</label>
-                    <input type="date" name="date_to" class="form-control" value="{{ $to->format('Y-m-d') }}">
-                </div>
+                @include('backend.accounting.partials.shamsi_period_filter')
                 <div class="col-md-3">
                     <button type="submit" class="btn btn-primary rounded-pill">به‌روزرسانی گزارش</button>
                 </div>
@@ -113,7 +111,7 @@
                         @foreach($daily as $row)
                             @php $gp = $row['revenue'] - $row['cogs']; @endphp
                             <tr>
-                                <td class="text-monospace" dir="ltr">{{ $row['d'] }}</td>
+                                <td class="text-monospace" dir="ltr">{{ $row['d_label'] ?? $row['d'] }}</td>
                                 <td>{{ number_format($row['revenue']) }}</td>
                                 <td>{{ $row['orders'] }}</td>
                                 <td>{{ number_format($row['cogs']) }}</td>
@@ -142,6 +140,7 @@
 @endsection
 
 @push('scripts')
+@include('backend.accounting.partials.shamsi_period_filter_scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof ApexCharts === 'undefined') return;
@@ -177,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function () {
         new ApexCharts(document.querySelector('#chart-monthly'), {
             chart: { type: 'bar', height: 280, toolbar: { show: false } },
             plotOptions: { bar: { borderRadius: 6, columnWidth: '55%' } },
-            xaxis: { categories: monthly.map(function (m) { return m.ym; }) },
+            xaxis: { categories: monthly.map(function (m) { return m.ym_label || m.ym; }) },
             series: [{ name: 'فروش', data: monthly.map(function (m) { return m.revenue; }) }],
             colors: ['#4f46e5'],
             dataLabels: { enabled: false },

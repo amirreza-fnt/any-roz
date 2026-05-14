@@ -4,6 +4,7 @@ namespace App\Services\Accounting;
 
 use App\Models\Order;
 use App\Models\OrderProduct;
+use App\Support\JalaliCalendar;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -22,13 +23,34 @@ class AccountingAnalyticsService
 
     public function parsePeriod(Request $request, int $defaultDays = 30): array
     {
+        $jFrom = trim((string) $request->input('j_date_from', ''));
+        $jTo = trim((string) $request->input('j_date_to', ''));
         $toIn = $request->input('date_to');
         $fromIn = $request->input('date_from');
 
-        $to = $toIn ? Carbon::parse($toIn)->endOfDay() : now()->endOfDay();
-        $from = $fromIn
-            ? Carbon::parse($fromIn)->startOfDay()
-            : $to->copy()->subDays(max(1, $defaultDays) - 1)->startOfDay();
+        try {
+            if ($jFrom !== '' && $jTo !== '') {
+                $from = JalaliCalendar::parseShamsiDateStartOfDay($jFrom);
+                $to = JalaliCalendar::parseShamsiDateEndOfDay($jTo);
+            } elseif ($jFrom !== '') {
+                $from = JalaliCalendar::parseShamsiDateStartOfDay($jFrom);
+                $to = $from->copy()->addDays(max(1, $defaultDays) - 1)->endOfDay();
+            } elseif ($jTo !== '') {
+                $to = JalaliCalendar::parseShamsiDateEndOfDay($jTo);
+                $from = $to->copy()->subDays(max(1, $defaultDays) - 1)->startOfDay();
+            } elseif ($fromIn || $toIn) {
+                $to = $toIn ? Carbon::parse($toIn)->endOfDay() : now()->endOfDay();
+                $from = $fromIn
+                    ? Carbon::parse($fromIn)->startOfDay()
+                    : $to->copy()->subDays(max(1, $defaultDays) - 1)->startOfDay();
+            } else {
+                $to = now()->endOfDay();
+                $from = $to->copy()->subDays(max(1, $defaultDays) - 1)->startOfDay();
+            }
+        } catch (\Throwable) {
+            $to = now()->endOfDay();
+            $from = $to->copy()->subDays(max(1, $defaultDays) - 1)->startOfDay();
+        }
 
         if ($from->gt($to)) {
             [$from, $to] = [$to->copy()->startOfDay(), $from->copy()->endOfDay()];
@@ -97,7 +119,8 @@ class AccountingAnalyticsService
                 $join->on('p.id', '=', 'op.product_id')
                     ->whereNull('p.deleted_at');
             })
-            ->whereBetween('o.created_at', [$from, $to])
+            ->whereRaw('COALESCE(o.payment_date, o.created_at) >= ?', [$from->copy()->startOfDay()])
+            ->whereRaw('COALESCE(o.payment_date, o.created_at) <= ?', [$to->copy()->endOfDay()])
             ->where('o.shipping_status', '!=', Order::STATUS_CANCELLED);
 
         if ($sourceFilter !== null) {
@@ -110,7 +133,7 @@ class AccountingAnalyticsService
     }
 
     /**
-     * @return list<array{d:string, revenue:float, orders:int, cogs:float}>
+     * @return list<array{d:string, d_label:string, revenue:float, orders:int, cogs:float}>
      */
     public function dailyRevenueSeries(Carbon $from, Carbon $to, ?string $sourceFilter = null): array
     {
@@ -120,11 +143,12 @@ class AccountingAnalyticsService
 
         $rows = $this->orderScope(Order::query(), $from, $to, $sourceFilter)
             ->where('shipping_status', '!=', Order::STATUS_CANCELLED)
-            ->get(['id', 'created_at', 'final_amount']);
+            ->get(['id', 'created_at', 'payment_date', 'final_amount']);
 
         $byDay = [];
         foreach ($rows as $o) {
-            $d = $o->created_at->toDateString();
+            $event = $o->payment_date ?? $o->created_at;
+            $d = $event->toDateString();
             if (! isset($byDay[$d])) {
                 $byDay[$d] = ['revenue' => 0.0, 'orders' => 0, 'ids' => []];
             }
@@ -148,7 +172,8 @@ class AccountingAnalyticsService
                     if (! $order) {
                         continue;
                     }
-                    $d = $order->created_at->toDateString();
+                    $event = $order->payment_date ?? $order->created_at;
+                    $d = $event->toDateString();
                     $buy = (int) ($line->product?->price_buy ?? 0);
                     $cogsByDay[$d] = ($cogsByDay[$d] ?? 0) + ($line->quantity * $buy);
                 }
@@ -164,6 +189,7 @@ class AccountingAnalyticsService
             $ordersCount = isset($bucket['ids']) ? count($bucket['ids']) : ($bucket['orders'] ?? 0);
             $out[] = [
                 'd' => $key,
+                'd_label' => JalaliCalendar::formatShamsiDate($cursor->copy()),
                 'revenue' => (float) ($bucket['revenue'] ?? 0),
                 'orders' => $ordersCount,
                 'cogs' => (float) ($cogsByDay[$key] ?? 0),
@@ -175,7 +201,7 @@ class AccountingAnalyticsService
     }
 
     /**
-     * @return list<array{ym:string, revenue:float, orders:int}>
+     * @return list<array{ym:string, ym_label:string, revenue:float, orders:int}>
      */
     public function monthlyRevenueLast12(?string $sourceFilter = null): array
     {
@@ -183,23 +209,29 @@ class AccountingAnalyticsService
             return [];
         }
 
-        $from = now()->subMonths(11)->startOfMonth();
+        $from = now()->subMonths(11)->startOfMonth()->startOfDay();
 
         $q = Order::query()
-            ->where('created_at', '>=', $from)
+            ->whereRaw('COALESCE(payment_date, created_at) >= ?', [$from])
             ->where('shipping_status', '!=', Order::STATUS_CANCELLED);
 
         if ($sourceFilter !== null) {
             $q->where('source', $sourceFilter);
         }
 
-        $grouped = $q->get(['created_at', 'final_amount', 'id'])
-            ->groupBy(fn ($o) => $o->created_at->format('Y-m'));
+        $grouped = $q->get(['created_at', 'payment_date', 'final_amount', 'id'])
+            ->groupBy(function (Order $o) {
+                $dt = $o->payment_date ?? $o->created_at;
+
+                return $dt->format('Y-m');
+            });
 
         $out = [];
         foreach ($grouped->sortKeys() as $ym => $group) {
+            $labelDate = Carbon::createFromFormat('Y-m', $ym)->startOfMonth();
             $out[] = [
                 'ym' => $ym,
+                'ym_label' => JalaliCalendar::formatShamsiYearMonth($labelDate),
                 'revenue' => (float) $group->sum('final_amount'),
                 'orders' => $group->unique('id')->count(),
             ];
@@ -241,8 +273,8 @@ class AccountingAnalyticsService
         }
 
         $base = Order::query()
-            ->whereBetween('created_at', [$from, $to])
             ->where('shipping_status', '!=', Order::STATUS_CANCELLED);
+        $this->applyAccountingDateBetween($base, $from, $to);
 
         $site = (float) (clone $base)->where('source', Order::SOURCE_SITE)->sum('final_amount');
         $mkt = (float) (clone $base)->where('source', Order::SOURCE_MARKETING)->sum('final_amount');
@@ -261,7 +293,8 @@ class AccountingAnalyticsService
 
         return Order::query()
             ->where('source', Order::SOURCE_SITE)
-            ->whereBetween('created_at', [$from, $to])
+            ->whereRaw('COALESCE(payment_date, created_at) >= ?', [$from->copy()->startOfDay()])
+            ->whereRaw('COALESCE(payment_date, created_at) <= ?', [$to->copy()->endOfDay()])
             ->with(['user'])
             ->withCount('items')
             ->orderByDesc('id');
@@ -269,12 +302,18 @@ class AccountingAnalyticsService
 
     private function orderScope(Builder $q, Carbon $from, Carbon $to, ?string $sourceFilter): Builder
     {
-        $q->whereBetween('created_at', [$from, $to]);
+        $this->applyAccountingDateBetween($q, $from, $to);
         if ($sourceFilter !== null) {
             $q->where('source', $sourceFilter);
         }
 
         return $q;
+    }
+
+    private function applyAccountingDateBetween(Builder $q, Carbon $from, Carbon $to): void
+    {
+        $q->whereRaw('COALESCE(payment_date, created_at) >= ?', [$from->copy()->startOfDay()])
+            ->whereRaw('COALESCE(payment_date, created_at) <= ?', [$to->copy()->endOfDay()]);
     }
 
     /**
@@ -298,7 +337,7 @@ class AccountingAnalyticsService
     }
 
     /**
-     * @return list<array{d:string, revenue:float, orders:int, cogs:float}>
+     * @return list<array{d:string, d_label:string, revenue:float, orders:int, cogs:float}>
      */
     private function emptyDailySeries(Carbon $from, Carbon $to): array
     {
@@ -308,6 +347,7 @@ class AccountingAnalyticsService
         while ($cursor->lte($end)) {
             $out[] = [
                 'd' => $cursor->toDateString(),
+                'd_label' => JalaliCalendar::formatShamsiDate($cursor->copy()),
                 'revenue' => 0.0,
                 'orders' => 0,
                 'cogs' => 0.0,

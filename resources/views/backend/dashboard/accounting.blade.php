@@ -5,6 +5,7 @@
 @endphp
 
 @push('styles')
+<link rel="stylesheet" href="{{ asset('assets/back-end/vendors/datepicker-jalali/bootstrap-datepicker.min.css') }}" type="text/css">
 <style>
     .acct-hub-hero {
         border-radius: 20px;
@@ -98,8 +99,8 @@
                 <div class="card acct-tile h-100">
                     <div class="card-body d-flex flex-column">
                         <h5 class="mb-2">۱ — برنامهٔ جامع حسابداری</h5>
-                        <p class="lead flex-grow-1">نمودارها، خلاصهٔ روزانه، تفکیک منبع فروش، وضعیت ارسال و خروجی CSV برای بایگانی و تحلیل عمیق‌تر.</p>
-                        <a href="{{ route('admin.accounting.professional.index', request()->only(['date_from','date_to'])) }}" class="btn btn-primary rounded-pill mt-2">ورود</a>
+                        <p class="lead flex-grow-1">نمودارها، خلاصهٔ روزانه، تفکیک منبع فروش، وضعیت ارسال و خروجی CSV؛ به‌همراه <strong>دفتر اسناد مجزا</strong> برای ثبت هزینه/درآمد خارج از فاکتور سایت.</p>
+                        <a href="{{ route('admin.accounting.professional.index', ['j_date_from' => JalaliCalendar::formatShamsiDate($from), 'j_date_to' => JalaliCalendar::formatShamsiDate($to)]) }}" class="btn btn-primary rounded-pill mt-2">ورود</a>
                     </div>
                 </div>
             </div>
@@ -117,7 +118,7 @@
                     <div class="card-body d-flex flex-column">
                         <h5 class="mb-2">۳ — حسابداری فروش سایت</h5>
                         <p class="lead flex-grow-1">فقط سفارش‌هایی که از خود سایت ثبت شده‌اند؛ فیلتر وضعیت پرداخت و ارسال، جمع مبالغ و خروجی اکسل.</p>
-                        <a href="{{ route('admin.accounting.site-sales.index', request()->only(['date_from','date_to'])) }}" class="btn btn-outline-primary rounded-pill mt-2">ورود</a>
+                        <a href="{{ route('admin.accounting.site-sales.index', ['j_date_from' => JalaliCalendar::formatShamsiDate($from), 'j_date_to' => JalaliCalendar::formatShamsiDate($to)]) }}" class="btn btn-outline-primary rounded-pill mt-2">ورود</a>
                     </div>
                 </div>
             </div>
@@ -134,15 +135,12 @@
                 <div class="card acct-tile h-100 border-primary" style="border-width:2px;">
                     <div class="card-body d-flex flex-column">
                         <h5 class="mb-2">۵ — مدیریت یکپارچه (همین صفحه)</h5>
-                        <p class="lead flex-grow-1">خلاصهٔ دورهٔ انتخابی، مقایسهٔ سهم سایت و بازاریابی و دسترسی سریع به همهٔ زیربخش‌ها.</p>
-                        <form method="get" class="mt-2 row no-gutters gutter-sm">
-                            <div class="col-6 pr-1 mb-1">
-                                <input type="date" name="date_from" class="form-control form-control-sm" value="{{ $from->format('Y-m-d') }}">
+                        <p class="lead flex-grow-1">خلاصهٔ دورهٔ انتخابی، مقایسهٔ سهم سایت و بازاریابی و دسترسی سریع به همهٔ زیربخش‌ها. بازهٔ زمان را با تقویم <strong>شمسی</strong> تنظیم کنید.</p>
+                        <form method="get" class="mt-2">
+                            <div class="row no-gutters gutter-sm align-items-end">
+                                @include('backend.accounting.partials.shamsi_period_filter')
                             </div>
-                            <div class="col-6 pl-1 mb-1">
-                                <input type="date" name="date_to" class="form-control form-control-sm" value="{{ $to->format('Y-m-d') }}">
-                            </div>
-                            <div class="col-12">
+                            <div class="mt-2">
                                 <button type="submit" class="btn btn-sm btn-primary btn-block rounded-pill">اعمال بازه</button>
                             </div>
                         </form>
@@ -162,6 +160,7 @@
 @endsection
 
 @push('scripts')
+@include('backend.accounting.partials.shamsi_period_filter_scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof ApexCharts === 'undefined') return;
@@ -171,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (el) el.innerHTML = '<p class="text-muted small mb-0 p-3">داده‌ای برای این بازه ثبت نشده است.</p>';
         return;
     }
-    var categories = spark.map(function (r) { return r.d; });
+    var categories = spark.map(function (r) { return r.d_label || r.d; });
     var series = [{ name: 'فروش', data: spark.map(function (r) { return r.revenue; }) }];
     new ApexCharts(document.querySelector('#acct-hub-spark'), {
         chart: { type: 'area', height: 260, toolbar: { show: false }, fontFamily: 'inherit' },

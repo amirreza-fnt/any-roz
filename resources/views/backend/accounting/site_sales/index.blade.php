@@ -1,6 +1,7 @@
 @extends('backend.views.view')
 
 @push('styles')
+<link rel="stylesheet" href="{{ asset('assets/back-end/vendors/datepicker-jalali/bootstrap-datepicker.min.css') }}" type="text/css">
 <style>
     .acct-site-hero { border-radius:18px; background:linear-gradient(110deg,#064e3b,#059669,#10b981); color:#fff; padding:1.5rem 1.75rem; margin-bottom:1.25rem; }
     .acct-site-hero h1 { font-size:1.2rem; font-weight:800; margin:0 0 .35rem; }
@@ -12,6 +13,9 @@
 @endpush
 
 @section('main')
+@php
+    use App\Support\JalaliCalendar;
+@endphp
 <div class="main-content">
     <div class="container-fluid">
         <div class="page-header mb-3">
@@ -26,19 +30,12 @@
 
         <div class="acct-site-hero">
             <h1>فقط سفارش‌های ثبت‌شده از کانال «سایت»</h1>
-            <p>فاکتورهایی که منبع آن‌ها «سایت» است اینجا لیست می‌شوند. برای فروش ثبت‌شده توسط بازاریابان پس از تأیید حسابداری، منبع «بازاریابی» می‌شود و در گزارش جامع دیده می‌شود نه در این صفحه.</p>
+            <p class="mb-0">فاکتورهایی که منبع آن‌ها «سایت» است اینجا لیست می‌شوند. برای فروش ثبت‌شده توسط بازاریابان پس از تأیید حسابداری، منبع «بازاریابی» می‌شود و در گزارش جامع دیده می‌شود نه در این صفحه. <strong>تاریخ نمایش داده‌شده:</strong> در صورت وجود «تاریخ پرداخت»، همان به شمسی نشان داده می‌شود؛ وگرنه تاریخ ثبت فاکتور.</p>
         </div>
 
         <form method="get" class="card border-0 shadow-sm mb-3">
             <div class="card-body row align-items-end">
-                <div class="col-md-2 mb-2">
-                    <label class="small text-muted">از</label>
-                    <input type="date" name="date_from" class="form-control" value="{{ $from->format('Y-m-d') }}">
-                </div>
-                <div class="col-md-2 mb-2">
-                    <label class="small text-muted">تا</label>
-                    <input type="date" name="date_to" class="form-control" value="{{ $to->format('Y-m-d') }}">
-                </div>
+                @include('backend.accounting.partials.shamsi_period_filter')
                 <div class="col-md-2 mb-2">
                     <label class="small text-muted">وضعیت پرداخت</label>
                     <select name="payment_status" class="form-control">
@@ -88,7 +85,7 @@
                         <tr>
                             <th>#</th>
                             <th>شماره فاکتور</th>
-                            <th>تاریخ</th>
+                            <th>تاریخ (شمسی)</th>
                             <th>مشتری</th>
                             <th>پرداخت</th>
                             <th>ارسال</th>
@@ -101,7 +98,7 @@
                             <tr>
                                 <td>{{ $o->id }}</td>
                                 <td class="text-monospace" dir="ltr">{{ $o->order_number }}</td>
-                                <td class="text-monospace small" dir="ltr">{{ $o->created_at->format('Y/m/d H:i') }}</td>
+                                <td class="text-monospace small" dir="ltr">{{ JalaliCalendar::formatShamsiDateTime($o->payment_date ?? $o->created_at) }}</td>
                                 <td>{{ $o->user?->name ?? '—' }}</td>
                                 <td><span class="badge badge-secondary">{{ \App\Models\Order::paymentStatusLabel($o->payment_status) }}</span></td>
                                 <td><span class="badge badge-info">{{ \App\Models\Order::shippingStatusLabel($o->shipping_status) }}</span></td>
@@ -129,6 +126,7 @@
 @endsection
 
 @push('scripts')
+@include('backend.accounting.partials.shamsi_period_filter_scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof ApexCharts === 'undefined') return;
@@ -138,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function () {
         chart: { type: 'line', height: 240, toolbar: { show: false } },
         stroke: { curve: 'smooth', width: 2 },
         colors: ['#059669'],
-        xaxis: { categories: daily.map(function (r) { return r.d; }) },
+        xaxis: { categories: daily.map(function (r) { return r.d_label || r.d; }) },
         series: [
             { name: 'فروش', data: daily.map(function (r) { return r.revenue; }) },
             { name: 'بهای تمام‌شدهٔ تخمینی', data: daily.map(function (r) { return r.cogs; }) },

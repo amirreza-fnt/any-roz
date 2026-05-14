@@ -57,9 +57,15 @@ class AccountingProfessionalController extends Controller
                 fputcsv($out, ['خلاصه', $k, is_scalar($v) ? (string) $v : json_encode($v, JSON_UNESCAPED_UNICODE)]);
             }
             fputcsv($out, []);
-            fputcsv($out, ['روز', 'فروش', 'تعداد سفارش', 'بهای تمام‌شده برآوردی']);
+            fputcsv($out, ['روز_میلادی', 'روز_شمسی', 'فروش', 'تعداد سفارش', 'بهای تمام‌شده برآوردی']);
             foreach ($daily as $row) {
-                fputcsv($out, [$row['d'], $row['revenue'], $row['orders'], $row['cogs']]);
+                fputcsv($out, [
+                    $row['d'],
+                    $row['d_label'] ?? '',
+                    $row['revenue'],
+                    $row['orders'],
+                    $row['cogs'],
+                ]);
             }
             fclose($out);
         }, $filename, [

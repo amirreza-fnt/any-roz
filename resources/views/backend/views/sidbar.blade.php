@@ -20,7 +20,7 @@
         </li>
         @endadmincan
 
-        @adminany(['dashboard.accounting.view', 'accounting.professional.view', 'accounting.professional.export', 'accounting.site_sales.view', 'accounting.site_sales.export', 'accounting.marketing_sales.view_list', 'accounting.marketing_sales.view_detail', 'accounting.marketing_sales.approve', 'accounting.marketing_sales.reject'])
+        @adminany(['dashboard.accounting.view', 'accounting.professional.view', 'accounting.professional.export', 'accounting.journal.view', 'accounting.journal.create', 'accounting.journal.edit', 'accounting.journal.delete', 'accounting.site_sales.view', 'accounting.site_sales.export', 'accounting.marketing_sales.view_list', 'accounting.marketing_sales.view_detail', 'accounting.marketing_sales.approve', 'accounting.marketing_sales.reject'])
         <li class="{{ request()->routeIs('admin.dashboard.accounting') || request()->routeIs('admin.accounting.*') ? 'open' : '' }}">
             <a href="javascript:;">
                 <i class="nav-link-icon" data-feather="pie-chart"></i>
@@ -37,6 +37,11 @@
                     <a class="{{ request()->routeIs('admin.accounting.professional.*') ? 'active' : '' }}" href="{{ route('admin.accounting.professional.index') }}">برنامهٔ جامع حسابداری</a>
                 </li>
                 @endadmincan
+                @adminany(['accounting.journal.view', 'accounting.journal.create', 'accounting.journal.edit', 'accounting.journal.delete'])
+                <li>
+                    <a class="{{ request()->routeIs('admin.accounting.journal.*') ? 'active' : '' }}" href="{{ route('admin.accounting.journal.index') }}">دفتر اسناد مجزا</a>
+                </li>
+                @endadminany
                 @admincan('accounting.site_sales.view')
                 <li>
                     <a class="{{ request()->routeIs('admin.accounting.site-sales.*') ? 'active' : '' }}" href="{{ route('admin.accounting.site-sales.index') }}">فروش سایت</a>
