@@ -253,7 +253,7 @@
         @adminany(['shipping_configs.view', 'shipping_configs.create'])
         <li class="{{ request()->routeIs('admin.shipping-configs.*') ? 'open' : '' }}">
             <a href="javascript:;">
-                <i class="nav-link-icon" data-feather="box"></i>
+                <i class="nav-link-icon" data-feather="clipboard"></i>
                 <span>روش ارسال</span>
             </a>
             <ul>
