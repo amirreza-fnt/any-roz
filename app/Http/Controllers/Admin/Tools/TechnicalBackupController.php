@@ -50,7 +50,7 @@ class TechnicalBackupController extends Controller
         }
 
         $allowed = array_keys(self::MODULE_LABELS);
-        $selected = $request->input('modules', $allowed);
+        $selected = $request->query('modules', $allowed);
         if (! is_array($selected)) {
             $selected = $allowed;
         }
@@ -111,9 +111,13 @@ class TechnicalBackupController extends Controller
         }
 
         $filename = 'technical-backup-'.date('Y-m-d-His').'.zip';
+        $length = (string) filesize($tmp);
 
         return response()->download($tmp, $filename, [
             'Content-Type' => 'application/zip',
+            'Content-Length' => $length,
+            'Cache-Control' => 'private, no-store, must-revalidate',
+            'Pragma' => 'public',
         ])->deleteFileAfterSend(true);
     }
 
@@ -386,18 +390,25 @@ class TechnicalBackupController extends Controller
         if ($rows->isEmpty()) {
             return null;
         }
-        $headers = ['id', 'name', 'email', 'mobile', 'email_verified_at', 'created_at', 'updated_at'];
+        $hasActive = Schema::hasColumn('users', 'is_active');
+        $headers = $hasActive
+            ? ['id', 'name', 'email', 'mobile', 'is_active', 'email_verified_at', 'created_at', 'updated_at']
+            : ['id', 'name', 'email', 'mobile', 'email_verified_at', 'created_at', 'updated_at'];
         $data = [];
         foreach ($rows as $u) {
-            $data[] = [
+            $row = [
                 $u->id,
                 $u->name,
                 $u->email,
                 $u->mobile,
-                (string) $u->email_verified_at,
-                (string) $u->created_at,
-                (string) $u->updated_at,
             ];
+            if ($hasActive) {
+                $row[] = $u->is_active ? '1' : '0';
+            }
+            $row[] = (string) $u->email_verified_at;
+            $row[] = (string) $u->created_at;
+            $row[] = (string) $u->updated_at;
+            $data[] = $row;
         }
 
         return $this->csvFromRows($headers, $data);

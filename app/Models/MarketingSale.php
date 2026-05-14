@@ -70,4 +70,25 @@ class MarketingSale extends Model
     {
         return $this->status === self::STATUS_PENDING;
     }
+
+    public function canApprove(): bool
+    {
+        if ($this->status === self::STATUS_PENDING) {
+            return true;
+        }
+        if ($this->status !== self::STATUS_REJECTED) {
+            return false;
+        }
+        if (! $this->order_id) {
+            return true;
+        }
+        $order = $this->relationLoaded('order') ? $this->order : $this->order()->first();
+
+        return $order && $order->shipping_status === Order::STATUS_CANCELLED;
+    }
+
+    public function canReject(): bool
+    {
+        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_APPROVED], true);
+    }
 }

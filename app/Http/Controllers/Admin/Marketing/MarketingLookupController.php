@@ -8,6 +8,7 @@ use App\Models\MarketingBuyer;
 use App\Models\Product;
 use App\Models\Province;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class MarketingLookupController extends Controller
 {
@@ -103,5 +104,102 @@ class MarketingLookupController extends Controller
             ->get(['id', 'name']);
 
         return response()->json($rows);
+    }
+
+    /**
+     * Reverse geocode via ApiEco Cedar (see config/services.php apieco.*).
+     */
+    public function reverseGeocode(Request $request)
+    {
+        $request->validate([
+            'lat' => 'required|numeric',
+            'lng' => 'required|numeric',
+        ]);
+
+        $key = (string) config('services.apieco.key');
+        if ($key === '') {
+            return response()->json([
+                'ok' => false,
+                'message' => 'برای آدرس‌یابی سیدارمپ، متغیر APIECO_KEY را در فایل .env تنظیم کنید (بازار ApiEco).',
+            ], 422);
+        }
+
+        $lat = $request->float('lat');
+        $lng = $request->float('lng');
+        $template = (string) config('services.apieco.reverse_geocode_url');
+        $point = $lat.','.$lng;
+        $url = str_replace(['{point}', '{lat}', '{lng}'], [$point, (string) $lat, (string) $lng], $template);
+
+        $mapIrKey = (string) (config('services.apieco.map_ir_key') ?: $key);
+
+        try {
+            $response = Http::timeout(20)
+                ->withHeaders([
+                    'apieco_key' => $key,
+                    'Api-Key' => $mapIrKey,
+                    'Accept' => 'application/json',
+                ])
+                ->post($url);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'اتصال به سرویس آدرس‌یابی برقرار نشد.',
+            ], 502);
+        }
+
+        if (! $response->successful()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'سرویس آدرس‌یابی پاسخ نامعتبر داد.',
+            ], 502);
+        }
+
+        $json = $response->json();
+        $address = is_array($json) ? $this->pickAddressFromGeocodeJson($json) : null;
+
+        if ($address === null || $address === '') {
+            return response()->json([
+                'ok' => false,
+                'message' => 'آدرسی برای این مختصات یافت نشد.',
+            ], 404);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'address' => $address,
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function pickAddressFromGeocodeJson(array $data): ?string
+    {
+        foreach (['address', 'formatted_address', 'formattedAddress', 'text', 'title', 'name', 'label'] as $k) {
+            if (! empty($data[$k]) && is_string($data[$k])) {
+                return trim($data[$k]);
+            }
+        }
+
+        foreach (['data', 'result', 'results', 'body', 'response'] as $nested) {
+            if (isset($data[$nested]) && is_array($data[$nested])) {
+                if ($nested === 'results') {
+                    $first = reset($data[$nested]);
+                    if (is_array($first)) {
+                        $picked = $this->pickAddressFromGeocodeJson($first);
+                        if ($picked) {
+                            return $picked;
+                        }
+                    }
+                } else {
+                    $picked = $this->pickAddressFromGeocodeJson($data[$nested]);
+                    if ($picked) {
+                        return $picked;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }

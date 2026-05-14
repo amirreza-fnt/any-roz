@@ -193,10 +193,14 @@
 @endsection
 
 @push('scripts')
+@php
+    $shamsiYear = \App\Support\JalaliCalendar::currentJalaliYear();
+@endphp
 <script src="{{ asset('assets/back-end/vendors/select2/js/select2.min.js') }}"></script>
 <script src="{{ asset('assets/back-end/vendors/datepicker-jalali/bootstrap-datepicker.fa.min.js') }}"></script>
 <script>
 (function () {
+    var y0 = {{ (int) $shamsiYear }};
     function randCode() {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
         let s = '';
@@ -229,14 +233,18 @@
     initS2();
 
     if (typeof $.fn.datepicker !== 'undefined') {
-        $('input.gc-shamsi-date').datepicker({
+        var cal = typeof JalaliDate !== 'undefined' ? JalaliDate : undefined;
+        var base = $.datepicker.regional['fa'] || {};
+        $('input.gc-shamsi-date').datepicker($.extend({}, base, {
+            calendar: cal,
             dateFormat: 'yy/mm/dd',
             showOtherMonths: true,
             selectOtherMonths: true,
             changeMonth: true,
             changeYear: true,
-            showButtonPanel: true
-        });
+            showButtonPanel: true,
+            yearRange: (y0 - 25) + ':' + (y0 + 10)
+        }));
     }
 
     if (typeof feather !== 'undefined') feather.replace();

@@ -32,6 +32,7 @@ class UserController extends Controller
             'email' => 'required|email|max:255|unique:users,email',
             'mobile' => ['nullable', 'string', 'max:20', 'regex:/^(|09[0-9]{9})$/'],
             'password' => 'required|string|min:8|confirmed',
+            'is_active' => 'nullable|boolean',
         ]);
         $data['mobile'] = $data['mobile'] === '' ? null : $data['mobile'];
 
@@ -40,6 +41,7 @@ class UserController extends Controller
             'email' => $data['email'],
             'mobile' => $data['mobile'] ?? null,
             'password' => Hash::make($data['password']),
+            'is_active' => $request->boolean('is_active', true),
         ]);
 
         message('success', 'کاربر ثبت شد.');
@@ -66,12 +68,20 @@ class UserController extends Controller
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'mobile' => ['nullable', 'string', 'max:20', 'regex:/^(|09[0-9]{9})$/'],
             'password' => 'nullable|string|min:8|confirmed',
+            'is_active' => 'nullable|boolean',
         ]);
         $data['mobile'] = ($data['mobile'] ?? '') === '' ? null : $data['mobile'];
+
+        if ($user->id === auth()->id() && ! $request->boolean('is_active')) {
+            message('warning', 'غیرفعال کردن حسابی که با آن وارد شده‌اید مجاز نیست.');
+
+            return redirect()->back()->withInput();
+        }
 
         $user->name = $data['name'];
         $user->email = $data['email'];
         $user->mobile = $data['mobile'] ?? null;
+        $user->is_active = $request->boolean('is_active');
         if (! empty($data['password'])) {
             $user->password = Hash::make($data['password']);
         }
@@ -82,17 +92,19 @@ class UserController extends Controller
         return redirect()->route('admin.users.index');
     }
 
-    public function destroy(User $user)
+    public function toggleActive(User $user)
     {
         if ($user->id === auth()->id()) {
-            message('warning', 'حذف حساب کاربری که با آن وارد شده‌اید مجاز نیست.');
+            message('warning', 'تغییر وضعیت حسابی که با آن وارد شده‌اید مجاز نیست.');
 
             return redirect()->back();
         }
 
-        $user->delete();
-        message('success', 'کاربر حذف شد.');
+        $user->is_active = ! $user->is_active;
+        $user->save();
 
-        return redirect()->route('admin.users.index');
+        message('success', $user->is_active ? 'کاربر فعال شد.' : 'کاربر غیرفعال شد.');
+
+        return redirect()->back();
     }
 }

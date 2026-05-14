@@ -25,6 +25,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         Route::get('api/buyers/{buyer}', [App\Http\Controllers\Admin\Marketing\MarketingLookupController::class, 'buyerJson'])->name('api.buyers.show');
         Route::get('api/provinces', [App\Http\Controllers\Admin\Marketing\MarketingLookupController::class, 'provinces'])->name('api.provinces');
         Route::get('api/cities', [App\Http\Controllers\Admin\Marketing\MarketingLookupController::class, 'cities'])->name('api.cities');
+        Route::get('api/reverse-geocode', [App\Http\Controllers\Admin\Marketing\MarketingLookupController::class, 'reverseGeocode'])->name('api.reverse-geocode');
         Route::resource('buyers', App\Http\Controllers\Admin\Marketing\MarketingBuyerController::class);
         Route::resource('sales', App\Http\Controllers\Admin\Marketing\MarketingSaleController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
     });
@@ -79,7 +80,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::resource('shipping-configs', App\Http\Controllers\Admin\Shipping\ShippingConfigController::class)->except(['destroy']);
 
     Route::get('technical-backup', [App\Http\Controllers\Admin\Tools\TechnicalBackupController::class, 'index'])->name('technical-backup.index');
-    Route::post('technical-backup/download', [App\Http\Controllers\Admin\Tools\TechnicalBackupController::class, 'download'])->name('technical-backup.download');
+    Route::get('technical-backup/download', [App\Http\Controllers\Admin\Tools\TechnicalBackupController::class, 'download'])->name('technical-backup.download');
 
-    Route::resource('users', App\Http\Controllers\Admin\Users\UserController::class);
+    Route::patch('users/{user}/toggle-active', [App\Http\Controllers\Admin\Users\UserController::class, 'toggleActive'])->name('users.toggle-active');
+    Route::resource('users', App\Http\Controllers\Admin\Users\UserController::class)->except(['destroy']);
 });

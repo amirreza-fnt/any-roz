@@ -24,7 +24,7 @@
         </div>
         <div class="form-group">
             <label>آدرس</label>
-            <textarea name="address" class="form-control" rows="3" maxlength="2000">{{ old('address', $b?->address) }}</textarea>
+            <textarea name="address" id="buyer-address" class="form-control" rows="3" maxlength="2000">{{ old('address', $b?->address) }}</textarea>
         </div>
         <div class="form-row">
             <div class="form-group col-md-6">
@@ -58,7 +58,7 @@
     <div class="col-lg-6">
         <div class="border rounded-lg p-3 mb-3 bg-light">
             <h6 class="font-weight-bold mb-2">موقعیت روی نقشه</h6>
-            <p class="small text-muted mb-2">با کلیک روی نقشه یا جابه‌جایی نشانگر، مختصات ذخیره می‌شود. نقشهٔ پایه از OpenStreetMap (رایگان) است.</p>
+            <p class="small text-muted mb-2">نقشهٔ پایه از OpenStreetMap (رایگان) است. برای <strong>آدرس نوشتاری از روی مختصات</strong> می‌توانید از وب‌سرویس آدرس‌یابی سیدارمپ از طریق بازار <a href="https://apieco.ir/api/cedarmap-reverse-geocoding/" target="_blank" rel="noopener">ApiEco</a> استفاده کنید؛ کلید <code class="small">APIECO_KEY</code> را در <code class="small">.env</code> قرار دهید و دکمهٔ زیر را بزنید.</p>
             <div id="buyer-map" class="rounded border bg-white" style="height:320px;z-index:1"></div>
             <div class="form-row mt-2">
                 <div class="form-group col-6 mb-0">
@@ -70,6 +70,7 @@
                     <input type="text" name="longitude" id="buyer-lng" class="form-control form-control-sm text-left" dir="ltr" readonly value="{{ old('longitude', $b?->longitude) }}">
                 </div>
             </div>
+            <button type="button" class="btn btn-outline-primary btn-sm btn-block mt-2" id="btn-buyer-reverse-geo">پیشنهاد آدرس از سیدارمپ (ApiEco)</button>
         </div>
     </div>
 </div>

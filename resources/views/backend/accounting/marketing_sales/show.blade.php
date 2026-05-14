@@ -1,5 +1,9 @@
 @extends('backend.views.view')
 
+@php
+    use App\Support\JalaliCalendar;
+@endphp
+
 @section('main')
 <div class="main-content">
     <div class="container">
@@ -21,6 +25,14 @@
             <div class="alert alert-warning border-0 shadow-sm">
                 این فروش در انتظار تصمیم شماست. با تأیید، فاکتور رسمی ایجاد و <strong>به‌طور خودکار به بخش تأمین ارسال</strong> می‌شود.
             </div>
+        @elseif($sale->status === \App\Models\MarketingSale::STATUS_APPROVED)
+            <div class="alert alert-success border-0 shadow-sm">
+                این فروش تأیید شده است. در صورت نیاز می‌توانید آن را <strong>رد</strong> کنید؛ فاکتور مرتبط لغو می‌شود و می‌توان دوباره از وضعیت «رد شده» به «تأیید» برگرداند.
+            </div>
+        @else
+            <div class="alert alert-secondary border-0 shadow-sm">
+                این فروش رد شده است. در صورت اصلاح، می‌توانید دوباره <strong>تأیید و فاکتور</strong> بزنید (در صورت وجود فاکتور لغوشده، فاکتور جدید صادر می‌شود).
+            </div>
         @endif
 
         <div class="row">
@@ -30,7 +42,7 @@
                     <div class="card-body">
                         <div class="row small">
                             <div class="col-md-6 mb-2"><strong>بازاریاب:</strong> <span class="text-monospace" dir="ltr">#{{ $sale->marketer_id }}</span></div>
-                            <div class="col-md-6 mb-2"><strong>تاریخ فروش:</strong> {{ $sale->sale_date ? \App\Support\JalaliCalendar::formatShamsiDate($sale->sale_date) : '—' }}</div>
+                            <div class="col-md-6 mb-2"><strong>تاریخ فروش:</strong> {{ $sale->sale_date ? JalaliCalendar::formatShamsiDate($sale->sale_date) : '—' }}</div>
                             <div class="col-md-6 mb-2"><strong>روش پرداخت:</strong> {{ $sale->payment_method ?: '—' }}</div>
                             <div class="col-md-6 mb-2"><strong>وضعیت:</strong> {{ \App\Models\MarketingSale::statusLabel($sale->status) }}</div>
                         </div>
@@ -85,7 +97,7 @@
                 </div>
 
                 @if($sale->status === \App\Models\MarketingSale::STATUS_APPROVED && $sale->order_id)
-                    <div class="card border-0 shadow-sm border-success">
+                    <div class="card border-0 shadow-sm border-success mb-3">
                         <div class="card-body">
                             <div class="font-weight-bold text-success mb-2">فاکتور ایجاد شد</div>
                             <a href="{{ route('admin.orders.show', $sale->order_id) }}" class="btn btn-success btn-block">مشاهدهٔ فاکتور</a>
@@ -93,25 +105,28 @@
                     </div>
                 @endif
 
-                @if($sale->isPending())
+                @if($sale->canApprove())
                     <div class="card border-0 shadow-sm mb-3">
                         <div class="card-header bg-success text-white font-weight-bold">تأیید و صدور فاکتور</div>
                         <div class="card-body">
-                            <form action="{{ route('admin.accounting.marketing-sales.approve', $sale) }}" method="post">
+                            <form action="{{ route('admin.accounting.marketing-sales.approve', ['marketing_sale' => $sale->id]) }}" method="post">
                                 @csrf
                                 @method('PATCH')
                                 <div class="form-group">
                                     <label class="small text-muted">یادداشت حسابدار (اختیاری)</label>
-                                    <textarea name="accountant_note" class="form-control" rows="2" maxlength="2000"></textarea>
+                                    <textarea name="accountant_note" class="form-control" rows="2" maxlength="2000">{{ old('accountant_note') }}</textarea>
                                 </div>
                                 <button type="submit" class="btn btn-success btn-block font-weight-bold">تأیید و ایجاد فاکتور</button>
                             </form>
                         </div>
                     </div>
+                @endif
+
+                @if($sale->canReject())
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-danger text-white font-weight-bold">رد فروش</div>
                         <div class="card-body">
-                            <form action="{{ route('admin.accounting.marketing-sales.reject', $sale) }}" method="post" onsubmit="return confirm('فروش رد شود؟');">
+                            <form action="{{ route('admin.accounting.marketing-sales.reject', ['marketing_sale' => $sale->id]) }}" method="post" onsubmit="return confirm('فروش رد شود؟ در صورت وجود فاکتور، وضعیت آن به «لغو شده» تغییر می‌کند.');">
                                 @csrf
                                 @method('PATCH')
                                 <div class="form-group">
@@ -124,7 +139,7 @@
                     </div>
                 @endif
 
-                @if($sale->accountant_note && ! $sale->isPending())
+                @if($sale->accountant_note)
                     <div class="card border-0 shadow-sm mt-3">
                         <div class="card-header bg-white font-weight-bold">یادداشت حسابدار</div>
                         <div class="card-body small">{{ $sale->accountant_note }}</div>
@@ -132,7 +147,7 @@
                 @endif
 
                 @if($sale->reviewed_at)
-                    <div class="small text-muted mt-2">زمان بررسی: {{ $sale->reviewed_at->format('Y/m/d H:i') }}
+                    <div class="small text-muted mt-2">زمان بررسی: {{ JalaliCalendar::formatShamsiDateTime($sale->reviewed_at) }}
                         @if($sale->reviewer) — {{ $sale->reviewer->name }} @endif
                     </div>
                 @endif

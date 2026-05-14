@@ -47,8 +47,8 @@ class MarketingSaleReviewController extends Controller
             'accountant_note' => 'nullable|string|max:2000',
         ]);
 
-        if (! $marketing_sale->isPending()) {
-            message('warning', 'این فروش قبلاً بررسی شده است.');
+        if (! $marketing_sale->canApprove()) {
+            message('warning', 'این فروش در وضعیت فعلی قابل تأیید نیست.');
 
             return redirect()->route('admin.accounting.marketing-sales.show', $marketing_sale);
         }
@@ -56,7 +56,7 @@ class MarketingSaleReviewController extends Controller
         try {
             $order = $service->approve($marketing_sale, $request->input('accountant_note'));
         } catch (\Throwable $e) {
-            message('danger', $e->getMessage());
+            message('error', $e->getMessage());
 
             return redirect()->back()->withInput();
         }
@@ -66,24 +66,25 @@ class MarketingSaleReviewController extends Controller
         return redirect()->route('admin.orders.show', $order);
     }
 
-    public function reject(Request $request, MarketingSale $marketing_sale)
+    public function reject(Request $request, MarketingSale $marketing_sale, ApproveMarketingSaleService $service)
     {
         $data = $request->validate([
             'accountant_note' => 'nullable|string|max:2000',
         ]);
 
-        if (! $marketing_sale->isPending()) {
-            message('warning', 'این فروش قبلاً بررسی شده است.');
+        if (! $marketing_sale->canReject()) {
+            message('warning', 'این فروش در وضعیت فعلی قابل رد نیست.');
 
             return redirect()->route('admin.accounting.marketing-sales.show', $marketing_sale);
         }
 
-        $marketing_sale->update([
-            'status' => MarketingSale::STATUS_REJECTED,
-            'accountant_note' => $data['accountant_note'] ?? null,
-            'reviewed_at' => now(),
-            'reviewed_by' => auth()->id(),
-        ]);
+        try {
+            $service->reject($marketing_sale, $data['accountant_note'] ?? null);
+        } catch (\Throwable $e) {
+            message('error', $e->getMessage());
+
+            return redirect()->back()->withInput();
+        }
 
         message('success', 'فروش رد شد.');
 

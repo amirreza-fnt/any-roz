@@ -19,8 +19,7 @@
             </div>
         </div>
 
-        <form method="post" action="{{ route('admin.technical-backup.download') }}" class="card border-0 shadow-sm">
-            @csrf
+        <form method="get" action="{{ route('admin.technical-backup.download') }}" class="card border-0 shadow-sm">
             <div class="card-body">
                 <h6 class="font-weight-bold mb-3">انتخاب بخش‌ها</h6>
                 <div class="row">

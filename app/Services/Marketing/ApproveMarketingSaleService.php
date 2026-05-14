@@ -15,76 +15,28 @@ class ApproveMarketingSaleService
 {
     public function approve(MarketingSale $sale, ?string $accountantNote = null): Order
     {
-        if (! $sale->isPending()) {
-            throw new RuntimeException('این فروش قابل تأیید نیست.');
+        if (! $sale->canApprove()) {
+            throw new RuntimeException('این فروش در وضعیت فعلی قابل تأیید نیست.');
         }
 
         return DB::transaction(function () use ($sale, $accountantNote) {
+            /** @var MarketingSale $sale */
+            $sale = MarketingSale::query()->lockForUpdate()->findOrFail($sale->id);
+
+            if (! $sale->canApprove()) {
+                throw new RuntimeException('این فروش در وضعیت فعلی قابل تأیید نیست.');
+            }
+
             $sale->load(['items.product.images', 'buyer.province', 'buyer.city']);
 
-            $buyer = $sale->buyer;
-            $total = (int) $sale->items->sum('unit_price');
-            $totalDecimal = number_format($total, 2, '.', '');
-
-            $userId = $this->resolveOrderUserId();
-
-            $orderNumber = $this->uniqueOrderNumber();
-
-            $order = Order::create([
-                'user_id' => $userId,
-                'order_number' => $orderNumber,
-                'total_amount' => $totalDecimal,
-                'shipping_fee' => '0.00',
-                'discount_amount' => '0.00',
-                'shipping_cost' => '0.00',
-                'insurance_cost' => '0.00',
-                'final_amount' => $totalDecimal,
-                'total_weight' => '0.00',
-                'payment_status' => 'paid',
-                'payment_method' => Str::limit((string) ($sale->payment_method ?? ''), 50),
-                'payment_transaction_id' => null,
-                'payment_date' => $sale->sale_date?->startOfDay() ?? now(),
-                'shipping_status' => Order::STATUS_PENDING_REVIEW,
-                'shipping_method' => 'فروش بازاریابی',
-                'shipping_address' => $buyer->address ?: '—',
-                'shipping_city' => $buyer->city?->name ?? '—',
-                'shipping_state' => $buyer->province?->name ?? '—',
-                'shipping_postal_code' => $buyer->postal_code ?: '0000000000',
-                'shipping_recipient_name' => trim($sale->buyer_first_name.' '.$sale->buyer_last_name),
-                'shipping_phone' => $sale->buyer_phone,
-                'shipping_tracking_code' => null,
-                'notes' => $this->composeOrderNotes($sale),
-                'sent_to_supply' => true,
-                'sent_to_supply_at' => now(),
-                'source' => 'marketing',
-                'marketer_id' => $sale->marketer_id,
-                'marketing_sale_id' => $sale->id,
-            ]);
-
-            $sort = 0;
-            foreach ($sale->items as $line) {
-                $product = $line->product;
-                $imagePath = $product->images->first()?->path;
-
-                OrderProduct::create([
-                    'order_id' => $order->id,
-                    'product_id' => $product->id,
-                    'product_name' => $product->title,
-                    'product_code' => $product->tracking_code,
-                    'product_image' => $imagePath,
-                    'quantity' => 1,
-                    'unit_price' => (string) $line->unit_price,
-                    'discount_percent' => 0,
-                    'discount_amount' => 0,
-                    'final_price' => (int) $line->unit_price,
-                    'product_options' => [
-                        'quantity_text' => $line->quantity_text,
-                        'marketing_sale_item_id' => $line->id,
-                        'marketer_id' => $sale->marketer_id,
-                    ],
-                ]);
-                $sort++;
+            if ($sale->order_id) {
+                $existing = Order::query()->lockForUpdate()->find($sale->order_id);
+                if ($existing && $existing->shipping_status !== Order::STATUS_CANCELLED) {
+                    throw new RuntimeException('برای این فروش فاکتور فعال وجود دارد؛ ابتدا آن را رد کنید.');
+                }
             }
+
+            $order = $this->createOrderForSale($sale);
 
             $sale->update([
                 'status' => MarketingSale::STATUS_APPROVED,
@@ -103,6 +55,112 @@ class ApproveMarketingSaleService
 
             return $order->fresh(['items']);
         });
+    }
+
+    public function reject(MarketingSale $sale, ?string $accountantNote = null): void
+    {
+        if (! $sale->canReject()) {
+            throw new RuntimeException('این فروش در وضعیت فعلی قابل رد نیست.');
+        }
+
+        DB::transaction(function () use ($sale, $accountantNote) {
+            /** @var MarketingSale $sale */
+            $sale = MarketingSale::query()->lockForUpdate()->findOrFail($sale->id);
+
+            if (! $sale->canReject()) {
+                throw new RuntimeException('این فروش در وضعیت فعلی قابل رد نیست.');
+            }
+
+            if ($sale->status === MarketingSale::STATUS_APPROVED && $sale->order_id) {
+                $order = Order::query()->lockForUpdate()->find($sale->order_id);
+                if ($order) {
+                    $order->shipping_status = Order::STATUS_CANCELLED;
+                    $order->sent_to_supply = false;
+                    $order->sent_to_supply_at = null;
+                    $order->save();
+
+                    OrderHistory::create([
+                        'order_id' => $order->id,
+                        'user_id' => auth()->id(),
+                        'status' => 'marketing_sale_rejected',
+                        'note' => 'فروش بازاریابی شمارهٔ '.$sale->id.' توسط حسابدار رد شد.',
+                    ]);
+                }
+            }
+
+            $sale->update([
+                'status' => MarketingSale::STATUS_REJECTED,
+                'accountant_note' => $accountantNote,
+                'reviewed_at' => now(),
+                'reviewed_by' => auth()->id(),
+            ]);
+        });
+    }
+
+    private function createOrderForSale(MarketingSale $sale): Order
+    {
+        $buyer = $sale->buyer;
+        $total = (int) $sale->items->sum('unit_price');
+        $totalDecimal = number_format($total, 2, '.', '');
+
+        $userId = $this->resolveOrderUserId();
+        $orderNumber = $this->uniqueOrderNumber();
+
+        $order = Order::create([
+            'user_id' => $userId,
+            'order_number' => $orderNumber,
+            'total_amount' => $totalDecimal,
+            'shipping_fee' => '0.00',
+            'discount_amount' => '0.00',
+            'shipping_cost' => '0.00',
+            'insurance_cost' => '0.00',
+            'final_amount' => $totalDecimal,
+            'total_weight' => '0.00',
+            'payment_status' => 'paid',
+            'payment_method' => Str::limit((string) ($sale->payment_method ?? ''), 50),
+            'payment_transaction_id' => null,
+            'payment_date' => $sale->sale_date?->startOfDay() ?? now(),
+            'shipping_status' => Order::STATUS_PENDING_REVIEW,
+            'shipping_method' => 'فروش بازاریابی',
+            'shipping_address' => $buyer->address ?: '—',
+            'shipping_city' => $buyer->city?->name ?? '—',
+            'shipping_state' => $buyer->province?->name ?? '—',
+            'shipping_postal_code' => $buyer->postal_code ?: '0000000000',
+            'shipping_recipient_name' => trim($sale->buyer_first_name.' '.$sale->buyer_last_name),
+            'shipping_phone' => $sale->buyer_phone,
+            'shipping_tracking_code' => null,
+            'notes' => $this->composeOrderNotes($sale),
+            'sent_to_supply' => true,
+            'sent_to_supply_at' => now(),
+            'source' => Order::SOURCE_MARKETING,
+            'marketer_id' => $sale->marketer_id,
+            'marketing_sale_id' => $sale->id,
+        ]);
+
+        foreach ($sale->items as $line) {
+            $product = $line->product;
+            $imagePath = $product->images->first()?->path;
+
+            OrderProduct::create([
+                'order_id' => $order->id,
+                'product_id' => $product->id,
+                'product_name' => $product->title,
+                'product_code' => $product->tracking_code,
+                'product_image' => $imagePath,
+                'quantity' => 1,
+                'unit_price' => (string) $line->unit_price,
+                'discount_percent' => 0,
+                'discount_amount' => 0,
+                'final_price' => (int) $line->unit_price,
+                'product_options' => [
+                    'quantity_text' => $line->quantity_text,
+                    'marketing_sale_item_id' => $line->id,
+                    'marketer_id' => $sale->marketer_id,
+                ],
+            ]);
+        }
+
+        return $order;
     }
 
     private function composeOrderNotes(MarketingSale $sale): string

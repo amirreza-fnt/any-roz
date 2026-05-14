@@ -31,4 +31,17 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    /*
+    | ApiEco proxy for Cedar reverse geocoding (see https://apieco.ir/api/cedarmap-reverse-geocoding/).
+    | URL may contain {point} as "lat,lng" or separate {lat} and {lng} placeholders.
+    */
+    'apieco' => [
+        'key' => env('APIECO_KEY'),
+        'map_ir_key' => env('APIECO_MAP_IR_KEY'),
+        'reverse_geocode_url' => env(
+            'APIECO_CEDAR_REVERSE_URL',
+            'https://api.apieco.ir/map-ir/v1/geocode/cedarmaps.streets/{point}.json'
+        ),
+    ],
+
 ];

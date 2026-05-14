@@ -52,6 +52,18 @@
                         <input type="password" name="password_confirmation" class="form-control" @if(! $isEdit) required minlength="8" @else minlength="8" @endif autocomplete="new-password">
                     </div>
                 </div>
+                <div class="form-group mb-0">
+                    @php
+                        $isActiveDefault = $user ? (bool) $user->is_active : true;
+                        $isActiveOld = old('is_active', $isActiveDefault ? '1' : '0');
+                    @endphp
+                    <div class="custom-control custom-checkbox">
+                        <input type="hidden" name="is_active" value="0">
+                        <input type="checkbox" class="custom-control-input" id="user-is-active" name="is_active" value="1" @checked((string) $isActiveOld === '1')>
+                        <label class="custom-control-label" for="user-is-active">حساب کاربری فعال باشد</label>
+                    </div>
+                    <small class="text-muted">کاربر غیرفعال در صورت اعمال محدودیت ورود، نمی‌تواند وارد سایت شود.</small>
+                </div>
             </div>
 
             <div class="card-footer bg-white d-flex justify-content-between">

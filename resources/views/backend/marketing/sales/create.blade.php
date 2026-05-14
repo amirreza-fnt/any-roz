@@ -124,10 +124,14 @@
 @endsection
 
 @push('scripts')
+@php
+    $shamsiYear = \App\Support\JalaliCalendar::currentJalaliYear();
+@endphp
 <script src="{{ asset('assets/back-end/vendors/select2/js/select2.min.js') }}"></script>
 <script src="{{ asset('assets/back-end/vendors/datepicker-jalali/bootstrap-datepicker.fa.min.js') }}"></script>
 <script>
 (function () {
+    var y0 = {{ (int) $shamsiYear }};
     var buyersUrl = @json(route('admin.marketing.api.buyers'));
     var productsUrl = @json(route('admin.marketing.api.products'));
     var buyerBase = @json(url('/admin/marketing/api/buyers'));
@@ -237,14 +241,18 @@
     });
 
     if (typeof $.fn.datepicker !== 'undefined') {
-        $('#sale_date_shamsi').datepicker({
+        var cal = typeof JalaliDate !== 'undefined' ? JalaliDate : undefined;
+        var base = $.datepicker.regional['fa'] || {};
+        $('#sale_date_shamsi').datepicker($.extend({}, base, {
+            calendar: cal,
             dateFormat: 'yy/mm/dd',
             showOtherMonths: true,
             selectOtherMonths: true,
             changeMonth: true,
             changeYear: true,
-            showButtonPanel: true
-        });
+            showButtonPanel: true,
+            yearRange: (y0 - 25) + ':' + (y0 + 10)
+        }));
     }
 
     $('#marketing-sale-form').on('submit', function () {

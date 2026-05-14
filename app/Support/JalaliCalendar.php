@@ -126,4 +126,26 @@ final class JalaliCalendar
 
         return sprintf('%04d/%02d/%02d', $jy, $jm, $jd);
     }
+
+    /** Current Jalali year (e.g. 1404) for datepicker yearRange. */
+    public static function currentJalaliYear(): int
+    {
+        [$jy] = self::gregorianToJalali(
+            (int) now()->year,
+            (int) now()->month,
+            (int) now()->day
+        );
+
+        return $jy;
+    }
+
+    /** Shamsi date + 24h clock (Gregorian time digits, common in Iran admin UIs). */
+    public static function formatShamsiDateTime(?Carbon $date): string
+    {
+        if ($date === null) {
+            return '—';
+        }
+
+        return self::formatShamsiDate($date).' '.$date->format('H:i');
+    }
 }

@@ -85,7 +85,7 @@
                                     <td class="align-middle">{{ $a->category?->title ?? '—' }}</td>
                                     <td class="align-middle">{{ number_format($a->view_count) }}</td>
                                     <td class="align-middle">{{ $a->is_featured ? 'بله' : 'خیر' }}</td>
-                                    <td class="align-middle small text-muted">{{ $a->updated_at?->format('Y/m/d H:i') }}</td>
+                                    <td class="align-middle small text-muted">{{ \App\Support\JalaliCalendar::formatShamsiDateTime($a->updated_at) }}</td>
                                     <td class="align-middle text-nowrap table-actions">
                                         @if ($a->isPubliclyVisible())
                                             <a href="{{ route('articles.public', $a) }}" class="btn btn-sm btn-outline-info" target="_blank" rel="noopener" title="مشاهده عمومی">مشاهده</a>

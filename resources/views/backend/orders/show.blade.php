@@ -1,6 +1,7 @@
 @extends('backend.views.view')
 
 @php
+    use App\Support\JalaliCalendar;
     $hideFinancials = $hideFinancials ?? false;
     $listBackRoute = $listBackRoute ?? route('admin.orders.index');
     $payClass = match($order->payment_status) {
@@ -166,7 +167,7 @@
                     </button>
                 </form>
                 @if ($order->sent_to_supply && $order->sent_to_supply_at)
-                    <span class="badge badge-light border text-dark small">آخرین ارسال: {{ $order->sent_to_supply_at->format('Y/m/d H:i') }}</span>
+                    <span class="badge badge-light border text-dark small">آخرین ارسال: {{ $order->sent_to_supply_at ? JalaliCalendar::formatShamsiDateTime($order->sent_to_supply_at) : '—' }}</span>
                 @endif
             </div>
         </div>
@@ -210,7 +211,7 @@
                 </h1>
                 <div class="sub d-flex flex-wrap gap-3">
                     <span>شماره سفارش: <strong>{{ $order->order_number }}</strong></span>
-                    <span>تاریخ: <strong>{{ $order->created_at?->format('Y/m/d H:i') }}</strong></span>
+                    <span>تاریخ: <strong>{{ JalaliCalendar::formatShamsiDateTime($order->created_at) }}</strong></span>
                     <span>وضعیت: <strong>{{ \App\Models\Order::shippingStatusLabel($order->shipping_status) }}</strong></span>
                 </div>
             </div>
@@ -243,7 +244,7 @@
                                 <div class="small text-monospace">تراکنش: {{ $order->payment_transaction_id }}</div>
                             @endif
                             @if ($order->payment_date)
-                                <div class="small text-muted">زمان پرداخت: {{ $order->payment_date->format('Y/m/d H:i') }}</div>
+                                <div class="small text-muted">زمان پرداخت: {{ JalaliCalendar::formatShamsiDateTime($order->payment_date) }}</div>
                             @endif
                         </div>
                     </div>
@@ -335,7 +336,7 @@
                         <h6 class="font-weight-bold mb-2">تاریخچه رویدادها</h6>
                         @foreach ($order->histories as $h)
                             <div class="timeline-item">
-                                <div class="small text-muted">{{ $h->created_at?->format('Y/m/d H:i') }} @if($h->user) — {{ $h->user->name }} @endif</div>
+                                <div class="small text-muted">{{ JalaliCalendar::formatShamsiDateTime($h->created_at) }} @if($h->user) — {{ $h->user->name }} @endif</div>
                                 <div class="font-weight-600">{{ $h->status }}</div>
                                 @if ($h->note)
                                     <div class="small mt-1" style="white-space:pre-wrap;">{{ $h->note }}</div>
