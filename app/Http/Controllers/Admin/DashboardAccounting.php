@@ -3,20 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-<<<<<<< HEAD
-use App\Models\MarketingSale;
-use Illuminate\Http\Request;
-
-class DashboardAccounting extends Controller
-{
-    public function __invoke(Request $request)
-    {
-        $pendingMarketingSales = MarketingSale::query()
-            ->where('status', MarketingSale::STATUS_PENDING)
-            ->count();
-
-        return view('backend.dashboard.accounting', compact('pendingMarketingSales'));
-=======
 use App\Models\Order;
 use App\Services\Accounting\AccountingAnalyticsService;
 use Illuminate\Http\Request;
@@ -60,6 +46,5 @@ class DashboardAccounting extends Controller
             'spark',
             'pendingMarketingSales'
         ));
->>>>>>> d3fa1091faa132a098086a56e2c5377c941e5cf6
     }
 }
