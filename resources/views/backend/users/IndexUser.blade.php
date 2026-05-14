@@ -1,9 +1,5 @@
 @extends('backend.views.view')
 
-@php
-    use App\Support\JalaliCalendar;
-@endphp
-
 @push('styles')
 <link rel="stylesheet" href="{{ asset('assets/back-end/vendors/dataTable/dataTables.min.css') }}" type="text/css">
 <style>
@@ -55,7 +51,7 @@
                                     <td class="align-middle font-weight-600">{{ $u->name }}</td>
                                     <td class="align-middle small" dir="ltr">{{ $u->email }}</td>
                                     <td class="align-middle text-monospace" dir="ltr">{{ $u->mobile ?: '—' }}</td>
-                                    <td class="align-middle small text-muted">{{ JalaliCalendar::formatShamsiDateTime($u->created_at) }}</td>
+                                    <td class="align-middle small text-muted">{{ \App\Support\JalaliCalendar::formatShamsiDateTime($u->created_at) }}</td>
                                     <td class="align-middle">
                                         @if($u->is_active)
                                             <span class="badge badge-success">فعال</span>

@@ -1,9 +1,5 @@
 @extends('backend.views.view')
 
-@php
-    use App\Support\JalaliCalendar;
-@endphp
-
 @push('styles')
 <style>
     .dash-hero {
@@ -93,7 +89,7 @@
                         <p class="sub mb-0">سلام {{ auth('admin')->user()->full_name }} — نمای کلی فروشگاه در یک نگاه.</p>
                     </div>
                     <div class="text-left small" dir="ltr" style="opacity: 0.9;">
-                        <div>{{ JalaliCalendar::formatShamsiDateTime(now()) }}</div>
+                        <div>{{ \App\Support\JalaliCalendar::formatShamsiDateTime(now()) }}</div>
                     </div>
                 </div>
             </div>

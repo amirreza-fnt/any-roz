@@ -1,7 +1,6 @@
 @extends('backend.views.view')
 
 @php
-    use App\Support\JalaliCalendar;
     $isEdit = ($type ?? '') === 'edit';
     $gc = $giftCode;
     $selCats = old('category_ids', $isEdit && $gc ? ($gc->category_ids ?? []) : []);
@@ -9,8 +8,8 @@
     $selUsers = old('user_ids', $isEdit && $gc ? ($gc->user_ids ?? []) : []);
     $vt = old('value_type', $isEdit && $gc ? $gc->value_type : 'fixed');
     $ap = old('applies_to', $isEdit && $gc ? $gc->applies_to : 'all');
-    $startsShamsi = old('starts_at_shamsi', $isEdit && $gc?->starts_at ? JalaliCalendar::formatShamsiDate($gc->starts_at) : '');
-    $expiresShamsi = old('expires_at_shamsi', $isEdit && $gc?->expires_at ? JalaliCalendar::formatShamsiDate($gc->expires_at) : '');
+    $startsShamsi = old('starts_at_shamsi', $isEdit && $gc?->starts_at ? \App\Support\JalaliCalendar::formatShamsiDate($gc->starts_at) : '');
+    $expiresShamsi = old('expires_at_shamsi', $isEdit && $gc?->expires_at ? \App\Support\JalaliCalendar::formatShamsiDate($gc->expires_at) : '');
 @endphp
 
 @push('styles')

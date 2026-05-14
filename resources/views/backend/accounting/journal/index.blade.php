@@ -1,9 +1,5 @@
 @extends('backend.views.view')
 
-@php
-    use App\Support\JalaliCalendar;
-@endphp
-
 @section('main')
 <div class="main-content">
     <div class="container-fluid">
@@ -67,7 +63,7 @@
                         @forelse($entries as $e)
                             <tr>
                                 <td>{{ $e->id }}</td>
-                                <td class="text-monospace" dir="ltr">{{ JalaliCalendar::formatShamsiDate($e->document_date) }}</td>
+                                <td class="text-monospace" dir="ltr">{{ \App\Support\JalaliCalendar::formatShamsiDate($e->document_date) }}</td>
                                 <td>{{ $e->title }}</td>
                                 <td><span class="badge badge-light border">{{ \App\Models\AccountingJournalEntry::kindLabel($e->kind) }}</span></td>
                                 <td class="text-left font-weight-bold" dir="ltr">{{ number_format((float) $e->amount) }}</td>

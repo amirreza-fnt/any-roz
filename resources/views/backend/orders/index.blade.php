@@ -1,7 +1,6 @@
 @extends('backend.views.view')
 
 @php
-    use App\Support\JalaliCalendar;
     $dateColIndex = $supplyMode ? 6 : 7;
     $nonOrderableTargets = $supplyMode ? '[3, 7]' : '[4, 8]';
 @endphp
@@ -116,7 +115,7 @@
                                             <span class="badge badge-light border">خیر</span>
                                         @endif
                                     </td>
-                                    <td class="align-middle small text-muted">{{ JalaliCalendar::formatShamsiDateTime($o->created_at) }}</td>
+                                    <td class="align-middle small text-muted">{{ \App\Support\JalaliCalendar::formatShamsiDateTime($o->created_at) }}</td>
                                     <td class="align-middle text-nowrap table-actions">
                                         @if ($supplyMode)
                                             <a href="{{ route('admin.orders.supply.show', $o) }}" class="btn btn-sm btn-outline-primary" title="جزئیات و چاپ">

@@ -1,9 +1,5 @@
 @extends('backend.views.view')
 
-@php
-    use App\Support\JalaliCalendar;
-@endphp
-
 @push('styles')
 <link rel="stylesheet" href="{{ asset('assets/back-end/vendors/datepicker-jalali/bootstrap-datepicker.min.css') }}" type="text/css">
 <style>
@@ -51,7 +47,7 @@
                     </ol>
                 </nav>
             </div>
-            <div class="text-muted small text-left" dir="ltr">{{ JalaliCalendar::formatShamsiDate($from) }} — {{ JalaliCalendar::formatShamsiDate($to) }}</div>
+            <div class="text-muted small text-left" dir="ltr">{{ \App\Support\JalaliCalendar::formatShamsiDate($from) }} — {{ \App\Support\JalaliCalendar::formatShamsiDate($to) }}</div>
         </div>
 
         <div class="acct-hub-hero">
@@ -100,7 +96,7 @@
                     <div class="card-body d-flex flex-column">
                         <h5 class="mb-2">۱ — برنامهٔ جامع حسابداری</h5>
                         <p class="lead flex-grow-1">نمودارها، خلاصهٔ روزانه، تفکیک منبع فروش، وضعیت ارسال و خروجی CSV؛ به‌همراه <strong>دفتر اسناد مجزا</strong> برای ثبت هزینه/درآمد خارج از فاکتور سایت.</p>
-                        <a href="{{ route('admin.accounting.professional.index', ['j_date_from' => JalaliCalendar::formatShamsiDate($from), 'j_date_to' => JalaliCalendar::formatShamsiDate($to)]) }}" class="btn btn-primary rounded-pill mt-2">ورود</a>
+                        <a href="{{ route('admin.accounting.professional.index', ['j_date_from' => \App\Support\JalaliCalendar::formatShamsiDate($from), 'j_date_to' => \App\Support\JalaliCalendar::formatShamsiDate($to)]) }}" class="btn btn-primary rounded-pill mt-2">ورود</a>
                     </div>
                 </div>
             </div>
@@ -118,7 +114,7 @@
                     <div class="card-body d-flex flex-column">
                         <h5 class="mb-2">۳ — حسابداری فروش سایت</h5>
                         <p class="lead flex-grow-1">فقط سفارش‌هایی که از خود سایت ثبت شده‌اند؛ فیلتر وضعیت پرداخت و ارسال، جمع مبالغ و خروجی اکسل.</p>
-                        <a href="{{ route('admin.accounting.site-sales.index', ['j_date_from' => JalaliCalendar::formatShamsiDate($from), 'j_date_to' => JalaliCalendar::formatShamsiDate($to)]) }}" class="btn btn-outline-primary rounded-pill mt-2">ورود</a>
+                        <a href="{{ route('admin.accounting.site-sales.index', ['j_date_from' => \App\Support\JalaliCalendar::formatShamsiDate($from), 'j_date_to' => \App\Support\JalaliCalendar::formatShamsiDate($to)]) }}" class="btn btn-outline-primary rounded-pill mt-2">ورود</a>
                     </div>
                 </div>
             </div>

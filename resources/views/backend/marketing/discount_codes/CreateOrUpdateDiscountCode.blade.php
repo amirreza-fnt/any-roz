@@ -1,15 +1,14 @@
 @extends('backend.views.view')
 
 @php
-    use App\Support\JalaliCalendar;
     $isEdit = ($type ?? '') === 'edit';
     $dc = $discountCode;
     $selCats = old('category_ids', $isEdit && $dc ? ($dc->category_ids ?? []) : []);
     $selProds = old('product_ids', $isEdit && $dc ? ($dc->product_ids ?? []) : []);
     $dt = old('discount_type', $isEdit && $dc ? $dc->discount_type : 'percent');
     $ap = old('applies_to', $isEdit && $dc ? $dc->applies_to : 'all');
-    $startsShamsi = old('starts_at_shamsi', $isEdit && $dc?->starts_at ? JalaliCalendar::formatShamsiDate($dc->starts_at) : '');
-    $expiresShamsi = old('expires_at_shamsi', $isEdit && $dc?->expires_at ? JalaliCalendar::formatShamsiDate($dc->expires_at) : '');
+    $startsShamsi = old('starts_at_shamsi', $isEdit && $dc?->starts_at ? \App\Support\JalaliCalendar::formatShamsiDate($dc->starts_at) : '');
+    $expiresShamsi = old('expires_at_shamsi', $isEdit && $dc?->expires_at ? \App\Support\JalaliCalendar::formatShamsiDate($dc->expires_at) : '');
 @endphp
 
 @push('styles')

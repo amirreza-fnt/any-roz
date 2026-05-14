@@ -1,8 +1,7 @@
 @php
-    use App\Support\JalaliCalendar;
     $entry = $entry ?? null;
     $isEdit = (bool) $entry;
-    $docShamsi = old('document_date_shamsi', $entry ? JalaliCalendar::formatShamsiDate($entry->document_date) : JalaliCalendar::formatShamsiDate(now()));
+    $docShamsi = old('document_date_shamsi', $entry ? \App\Support\JalaliCalendar::formatShamsiDate($entry->document_date) : \App\Support\JalaliCalendar::formatShamsiDate(now()));
 @endphp
 
 <div class="form-row">

@@ -23,13 +23,10 @@ class AccountingJournalEntry extends Model
         'admin_id',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'document_date' => 'date',
-            'amount' => 'decimal:2',
-        ];
-    }
+    protected $casts = [
+        'document_date' => 'date',
+        'amount' => 'decimal:2',
+    ];
 
     public function admin(): BelongsTo
     {

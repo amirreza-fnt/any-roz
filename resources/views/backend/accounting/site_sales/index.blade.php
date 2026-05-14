@@ -13,9 +13,6 @@
 @endpush
 
 @section('main')
-@php
-    use App\Support\JalaliCalendar;
-@endphp
 <div class="main-content">
     <div class="container-fluid">
         <div class="page-header mb-3">
@@ -98,7 +95,7 @@
                             <tr>
                                 <td>{{ $o->id }}</td>
                                 <td class="text-monospace" dir="ltr">{{ $o->order_number }}</td>
-                                <td class="text-monospace small" dir="ltr">{{ JalaliCalendar::formatShamsiDateTime($o->payment_date ?? $o->created_at) }}</td>
+                                <td class="text-monospace small" dir="ltr">{{ \App\Support\JalaliCalendar::formatShamsiDateTime($o->payment_date ?? $o->created_at) }}</td>
                                 <td>{{ $o->user?->name ?? '—' }}</td>
                                 <td><span class="badge badge-secondary">{{ \App\Models\Order::paymentStatusLabel($o->payment_status) }}</span></td>
                                 <td><span class="badge badge-info">{{ \App\Models\Order::shippingStatusLabel($o->shipping_status) }}</span></td>

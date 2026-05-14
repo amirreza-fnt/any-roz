@@ -1,9 +1,5 @@
 @extends('backend.views.view')
 
-@php
-    use App\Support\JalaliCalendar;
-@endphp
-
 @section('main')
 <div class="main-content">
     <div class="container">
@@ -61,7 +57,7 @@
                     <div class="card-body">
                         <div class="row small">
                             <div class="col-md-6 mb-2"><strong>بازاریاب:</strong> <span class="text-monospace" dir="ltr">#{{ $sale->marketer_id }}</span></div>
-                            <div class="col-md-6 mb-2"><strong>تاریخ فروش:</strong> {{ $sale->sale_date ? JalaliCalendar::formatShamsiDate($sale->sale_date) : '—' }}</div>
+                            <div class="col-md-6 mb-2"><strong>تاریخ فروش:</strong> {{ $sale->sale_date ? \App\Support\JalaliCalendar::formatShamsiDate($sale->sale_date) : '—' }}</div>
                             <div class="col-md-6 mb-2"><strong>روش پرداخت:</strong> {{ $sale->payment_method ?: '—' }}</div>
                             <div class="col-md-6 mb-2"><strong>وضعیت:</strong> {{ \App\Models\MarketingSale::statusLabel($sale->status) }}</div>
                         </div>
@@ -166,7 +162,7 @@
                 @endif
 
                 @if($sale->reviewed_at)
-                    <div class="small text-muted mt-2">زمان بررسی: {{ JalaliCalendar::formatShamsiDateTime($sale->reviewed_at) }}
+                    <div class="small text-muted mt-2">زمان بررسی: {{ \App\Support\JalaliCalendar::formatShamsiDateTime($sale->reviewed_at) }}
                         @if($sale->reviewer) — {{ $sale->reviewer->full_name }} @endif
                     </div>
                 @endif
