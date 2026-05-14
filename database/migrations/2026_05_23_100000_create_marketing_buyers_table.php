@@ -18,7 +18,8 @@ return new class extends Migration
             $table->unsignedInteger('province_id')->nullable();
             $table->unsignedInteger('city_id')->nullable();
             $table->foreign('province_id')->references('id')->on('provinces')->nullOnDelete();
-            $table->foreign('city_id')->references('id')->on('cities')->nullOnDelete();$table->string('store_name', 255)->nullable();
+            $table->foreign('city_id')->references('id')->on('cities')->nullOnDelete();
+            $table->string('store_name', 255)->nullable();
             $table->string('postal_code', 20)->nullable();
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
