@@ -63,7 +63,10 @@ class MarketingSaleReviewController extends Controller
 
         message('success', 'فروش تأیید شد و فاکتور شمارهٔ '.$order->order_number.' ایجاد گردید.');
 
-        return redirect()->route('admin.orders.show', $order);
+        return redirect()
+            ->route('admin.accounting.marketing-sales.show', $marketing_sale)
+            ->with('marketing_approved_order_id', $order->id)
+            ->with('marketing_approved_order_number', $order->order_number);
     }
 
     public function reject(Request $request, MarketingSale $marketing_sale, ApproveMarketingSaleService $service)

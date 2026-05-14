@@ -88,8 +88,7 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
         Route::resource('shipping-configs', App\Http\Controllers\Admin\Shipping\ShippingConfigController::class)->except(['destroy']);
 
         Route::get('technical-backup', [App\Http\Controllers\Admin\Tools\TechnicalBackupController::class, 'index'])->name('technical-backup.index');
-        Route::post('technical-backup/prepare', [App\Http\Controllers\Admin\Tools\TechnicalBackupController::class, 'prepare'])->name('technical-backup.prepare');
-        Route::get('technical-backup/fetch/{token}', [App\Http\Controllers\Admin\Tools\TechnicalBackupController::class, 'fetch'])->name('technical-backup.fetch');
+        Route::post('technical-backup/download', [App\Http\Controllers\Admin\Tools\TechnicalBackupController::class, 'download'])->name('technical-backup.download');
 
         Route::patch('users/{user}/toggle-active', [App\Http\Controllers\Admin\Users\UserController::class, 'toggleActive'])->name('users.toggle-active');
         Route::resource('users', App\Http\Controllers\Admin\Users\UserController::class)->except(['destroy']);

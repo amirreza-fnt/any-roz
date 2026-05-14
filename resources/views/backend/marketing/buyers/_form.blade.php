@@ -58,7 +58,7 @@
     <div class="col-lg-6">
         <div class="border rounded-lg p-3 mb-3 bg-light">
             <h6 class="font-weight-bold mb-2">موقعیت روی نقشه</h6>
-            <p class="small text-muted mb-2">نقشهٔ تعاملی از <strong>پلتفرم نشان</strong> (Leaflet SDK) است. برای پر کردن آدرس از روی نقطهٔ انتخاب‌شده، کلید وب‌سرویس <code class="small">NESHAN_SERVICE_API_KEY</code> را در <code class="small">.env</code> تنظیم کنید و دکمهٔ زیر را بزنید.</p>
+            <p class="small text-muted mb-2">با کلیک روی نقشه یا جابه‌جایی نشانگر، مختصات ثبت می‌شود.</p>
             <div id="buyer-map" class="rounded border bg-white" style="height:320px;z-index:1"></div>
             <div class="form-row mt-2">
                 <div class="form-group col-6 mb-0">

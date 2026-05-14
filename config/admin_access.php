@@ -96,8 +96,7 @@ return [
         'admin.shipping-configs.toggle-status' => 'shipping_configs.toggle_status',
 
         'admin.technical-backup.index' => 'technical_backup.view',
-        'admin.technical-backup.prepare' => 'technical_backup.prepare',
-        'admin.technical-backup.fetch' => 'technical_backup.download',
+        'admin.technical-backup.download' => 'technical_backup.download',
 
         'admin.users.index' => 'users.view',
         'admin.users.create' => 'users.create',
@@ -246,8 +245,7 @@ return [
             'label' => 'پشتیبان‌گیری فنی',
             'items' => [
                 ['key' => 'technical_backup.view', 'label' => 'مشاهدهٔ صفحه'],
-                ['key' => 'technical_backup.prepare', 'label' => 'شروع ساخت بسته (ارسال فرم)'],
-                ['key' => 'technical_backup.download', 'label' => 'دریافت فایل ZIP'],
+                ['key' => 'technical_backup.download', 'label' => 'دانلود خروجی CSV (Excel)'],
             ],
         ],
         [

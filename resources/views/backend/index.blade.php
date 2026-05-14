@@ -1,520 +1,102 @@
 @extends('backend.views.view')
 
 @section('main')
-
-<!-- begin::main-content -->
 <div class="main-content">
-    <!-- begin::container -->
     <div class="container">
-        <div class="page-header">
-            <h4>داشبورد مدیریت آنی رز</h4>
-            <small class="">خوش آمدید، <span class="text-primary">جان اسنو</span></small>
+        <div class="page-header mb-4">
+            <h4 class="mb-1">داشبورد مدیریت</h4>
+            <p class="text-muted mb-0 small">خلاصهٔ وضعیت فعلی فروشگاه — {{ auth('admin')->user()->full_name }}</p>
         </div>
 
         <div class="row">
-            <div class="col-md-12">
-
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title d-flex align-items-start justify-content-between mb-0">
-                                    <span>نرخ تبدیل</span>
-                                    <span class="avatar">
-                                        <span class="avatar-title bg-success text-white rounded-circle">
-                                            <i class="fa fa-percent"></i>
-                                        </span>
-                                    </span>
-                                </h6>
-                                <div class="d-flex d-sm-block d-lg-flex align-items-end mb-3">
-                                    <h3 class="mb-0 mr-2 line-height-28">0.19%</h3>
-                                    <p class="small text-muted mb-0 line-height-20">
-                                        <span class="text-success" dir="ltr">+ 1.2%</span> از هفته پیش
-                                    </p>
-                                </div>
-                                <canvas id="widget-chart1"></canvas>
+            <div class="col-sm-6 col-xl-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="text-muted small mb-1">سفارش‌ها</div>
+                                <div class="h3 mb-0 font-weight-bold text-primary">{{ number_format($stats['orders']) }}</div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title d-flex align-items-start justify-content-between mb-0">
-                                    <span>خریدهای منحصر به فرد</span>
-                                    <span class="avatar">
-                                        <span class="avatar-title bg-warning text-white rounded-circle">
-                                            <i class="fa fa-dollar"></i>
-                                        </span>
-                                    </span>
-                                </h6>
-                                <div class="d-flex d-sm-block d-lg-flex align-items-end mb-3">
-                                    <h3 class="mb-0 mr-2 line-height-28">3,137</h3>
-                                    <p class="small text-muted mb-0 line-height-20">
-                                        <span class="text-danger" dir="ltr">-1.2%</span> از هفته پیش
-                                    </p>
-                                </div>
-                                <canvas id="widget-chart2"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title d-flex align-items-start justify-content-between mb-0">
-                                    <span>تعداد سفارش</span>
-                                    <span class="avatar">
-                                        <span class="avatar-title bg-danger text-white rounded-circle">
-                                            <i class="fa fa-cube"></i>
-                                        </span>
-                                    </span>
-                                </h6>
-                                <div class="d-flex d-sm-block d-lg-flex align-items-end mb-3">
-                                    <h3 class="mb-0 mr-2 line-height-28">1,650</h3>
-                                    <p class="small text-muted mb-0 line-height-20">
-                                        <span class="text-success" dir="ltr">+ 2.1%</span> از هفته پیش
-                                    </p>
-                                </div>
-                                <canvas id="widget-chart3"></canvas>
-                            </div>
+                            <span class="avatar avatar-sm bg-primary-bright text-primary rounded-circle"><i data-feather="file-text" class="width-18 height-18"></i></span>
                         </div>
                     </div>
                 </div>
-
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title d-flex justify-content-between">
-                                    <span>فروش این ماه</span>
-                                    <span class="dropdown primary-font">
-                                        <a class="pl-2 pr-2" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
-                                        </a>
-                                        <span class="dropdown-menu dropdown-menu-right">
-                                            <a href="#" class="dropdown-item">عمل</a>
-                                            <a href="#" class="dropdown-item">عمل دیگر</a>
-                                            <a href="#" class="dropdown-item">یک عمل دیگر</a>
-                                        </span>
-                                    </span>
-                                </h6>
-                                <div id="chart1"></div>
+            </div>
+            <div class="col-sm-6 col-xl-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="text-muted small mb-1">محصولات</div>
+                                <div class="h3 mb-0 font-weight-bold text-success">{{ number_format($stats['products']) }}</div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title mb-md-4 mb-lg-2">کل مشتریان</h6>
-                                <div class="text-center">
-                                    <div class="mb-2">
-                                        <span class="bar-1">2,5,9,6,5,2,4,3,7,5</span>
-                                    </div>
-                                    <div class="font-size-30 mb-1 font-weight-bold text-primary">1,241</div>
-                                    <p class="mb-0 text-muted">
-                                        <i class="fa fa-caret-up text-primary m-r-5"></i> 23% افزایش در هفته پیش
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title mb-md-4 mb-lg-3">میانگین ارزش سفارش</h6>
-                                <div class="text-center">
-                                    <div class="mb-2">
-                                        <span class="bar-3">2,5,9,6,5,2,4,3,7,5</span>
-                                    </div>
-                                    <div class="font-size-30 mb-1 font-weight-bold text-success">732,520 تومان</div>
-                                    <p class="mb-0 text-muted">
-                                        <i class="fa fa-caret-down text-danger m-r-5"></i> 4 واحد کمتر از هفته پیش
-                                    </p>
-                                </div>
-                            </div>
+                            <span class="avatar avatar-sm bg-success-bright text-success rounded-circle"><i data-feather="package" class="width-18 height-18"></i></span>
                         </div>
                     </div>
                 </div>
-
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title d-md-flex justify-content-between">
-                                    <span class="d-block">درآمد های اخیر شما</span>
-                                    <span class="reportrange btn btn-outline-light btn-sm mt-3 mt-md-0 primary-font">
-                                        <i class="ti-calendar mr-2"></i>
-                                        <span class="text"></span>
-                                        <i class="ti-angle-down ml-2"></i>
-                                    </span>
-                                </h6>
-                                <div class="row">
-                                    <div class="col-lg-4 col-md-12">
-                                        <div class="card border mb-3">
-                                            <div class="card-body p-3">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="icon-block mr-3 icon-block-lg icon-block-outline-success text-success">
-                                                        <i class="fa fa-bar-chart"></i>
-                                                    </div>
-                                                    <div>
-                                                        <h6 class="text-uppercase font-size-11 mt-1 mb-1">سود ناخالص</h6>
-                                                        <h4 class="mb-0">1,958,104 تومان</h4>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="card border mb-3">
-                                            <div class="card-body p-3">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="icon-block mr-3 icon-block-lg icon-block-outline-danger  text-danger">
-                                                        <i class="fa fa-hand-lizard-o"></i>
-                                                    </div>
-                                                    <div>
-                                                        <h6 class="text-uppercase font-size-11 mt-1 mb-1">کسر مالیات</h6>
-                                                        <h4 class="mb-0">234,769 تومان</h4>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="card border mb-3">
-                                            <div class="card-body p-3">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="icon-block mr-3 icon-block-lg icon-block-outline-warning text-warning">
-                                                        <i class="fa fa-dollar"></i>
-                                                    </div>
-                                                    <div>
-                                                        <h6 class="text-uppercase font-size-11 mt-1 mb-1">سود خالص</h6>
-                                                        <h4 class="mb-0">1,608,469 تومان</h4>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-8 col-md-12">
-                                        <div class="table-responsive">
-                                            <table class="table table-hover mb-0">
-                                                <thead class="thead-light">
-                                                <tr>
-                                                    <th>تاریخ</th>
-                                                    <th>تعداد فروش</th>
-                                                    <th>سود ناخالص</th>
-                                                    <th>کسر مالیات</th>
-                                                    <th class="text-right">سود خالص</th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                <tr>
-                                                    <td>1398/10/25</td>
-                                                    <td>1,050</td>
-                                                    <td class="text-success">+ 32,580 تومان</td>
-                                                    <td class="text-danger">- 3,023 تومان</td>
-                                                    <td class="text-right">28,670 تومان</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>1398/10/24</td>
-                                                    <td>780</td>
-                                                    <td class="text-success">+ 30,065 تومان</td>
-                                                    <td class="text-danger">- 2,780 تومان</td>
-                                                    <td class="text-right">26,930 تومان</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>1398/10/23</td>
-                                                    <td>1.980</td>
-                                                    <td class="text-success">+ 30,065 تومان</td>
-                                                    <td class="text-danger">- 2,780 تومان</td>
-                                                    <td class="text-right">26,930 تومان</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>1398/10/22</td>
-                                                    <td>300</td>
-                                                    <td class="text-success">+ 30,065 تومان</td>
-                                                    <td class="text-danger">- 2,780 تومان</td>
-                                                    <td class="text-right">26,930 تومان</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>1398/10/21</td>
-                                                    <td>940</td>
-                                                    <td class="text-success">+ 30,065 تومان</td>
-                                                    <td class="text-danger">- 2,780 تومان</td>
-                                                    <td class="text-right">26,930 تومان</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>1398/10/20</td>
-                                                    <td>1.280</td>
-                                                    <td class="text-success">+ 30,065 تومان</td>
-                                                    <td class="text-danger">-2,780 تومان</td>
-                                                    <td class="text-right">26,930 تومان</td>
-                                                </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="text-muted small mb-1">دسته‌ها</div>
+                                <div class="h3 mb-0 font-weight-bold text-info">{{ number_format($stats['categories']) }}</div>
                             </div>
+                            <span class="avatar avatar-sm bg-info-bright text-info rounded-circle"><i data-feather="layers" class="width-18 height-18"></i></span>
                         </div>
                     </div>
                 </div>
-
-                <div class="row">
-                    <div class="col-xl-6 col-md-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title d-flex justify-content-between">
-                                    <span>توزیع درآمد</span>
-                                    <span class="dropdown primary-font">
-                                        <a class="btn btn-outline-light btn-sm dropdown-toggle" href="#" data-toggle="dropdown">آمریکا</a>
-                                        <span class="dropdown-menu dropdown-menu-right">
-                                            <a href="#" class="dropdown-item">آمریکا</a>
-                                            <a href="#" class="dropdown-item">آلمان</a>
-                                            <a href="#" class="dropdown-item">ایران</a>
-                                            <a href="#" class="dropdown-item">ایتالیا</a>
-                                        </span>
-                                    </span>
-                                </h6>
-                                <div id="vmap_usa_en" style="height: 300px"></div>
-                                <div class="table-responsive mt-3">
-                                    <table class="table table-borderless mb-0">
-                                        <thead class="thead-light">
-                                        <tr>
-                                            <th class="wd-40">استان ها</th>
-                                            <th class="wd-25 text-right">سفارشات</th>
-                                            <th class="wd-35 text-right">درآمد</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr>
-                                            <td class="tx-medium">تهران</td>
-                                            <td class="text-right">12,201</td>
-                                            <td class="text-right text-success">150,200 تومان</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="tx-medium">تبریز</td>
-                                            <td class="text-right">11,950</td>
-                                            <td class="text-right text-success">138,910 تومان</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="tx-medium">کرمان</td>
-                                            <td class="text-right">11,198</td>
-                                            <td class="text-right text-success">132,050 تومان</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="tx-medium">مشهد</td>
-                                            <td class="text-right">9,885</td>
-                                            <td class="text-right text-success">127,762 تومان</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="text-muted small mb-1">کاربران سایت</div>
+                                <div class="h3 mb-0 font-weight-bold text-secondary">{{ number_format($stats['users']) }}</div>
                             </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title">کاربران زیر مجموعه من</h6>
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item d-flex align-items-center p-l-r-0">
-                                        <div>
-                                            <figure class="avatar avatar-state-success m-r-15">
-                                                <img src="{{ asset('assets/back-end/assets/media/image/user/man_avatar5.jpg') }}" class="rounded-circle" alt="image">
-                                            </figure>
-                                        </div>
-                                        <div>
-                                            <h6 class="m-b-0">تونی استارک</h6>
-                                            <small class="text-muted">مهندس</small>
-                                        </div>
-                                        <div class="ml-auto">
-                                            <span class="badge badge-danger mr-2 d-sm-inline d-none">رد شده</span>
-                                            <div class="dropdown">
-                                                <a href="#" data-toggle="dropdown" class="btn btn-outline-light btn-sm" aria-haspopup="true" aria-expanded="false">
-                                                    <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
-                                                </a>
-                                                <div class="dropdown-menu dropdown-menu-right">
-                                                    <a href="#" class="dropdown-item">مشاهده</a>
-                                                    <a href="#" class="dropdown-item">ارسال پیام</a>
-                                                    <a href="#" class="dropdown-item">اختصاص دادن</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item d-flex align-items-center p-l-r-0">
-                                        <div>
-                                            <figure class="avatar avatar-state-success m-r-15">
-                                                <img src="{{ asset('assets/back-end/assets/media/image/user/women_avatar3.jpg') }}" class="rounded-circle" alt="image">
-                                            </figure>
-                                        </div>
-                                        <div>
-                                            <h6 class="m-b-0">تونی استارک</h6>
-                                            <small class="text-muted">منابع انسانی</small>
-                                        </div>
-                                        <div class="ml-auto">
-                                            <span class="badge badge-success mr-2 d-sm-inline d-none">اتمام یافته</span>
-                                            <div class="dropdown">
-                                                <a href="#" data-toggle="dropdown" class="btn btn-outline-light btn-sm" aria-haspopup="true" aria-expanded="false">
-                                                    <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
-                                                </a>
-                                                <div class="dropdown-menu dropdown-menu-right">
-                                                    <a href="#" class="dropdown-item">مشاهده</a>
-                                                    <a href="#" class="dropdown-item">ارسال پیام</a>
-                                                    <a href="#" class="dropdown-item">اختصاص دادن</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item d-flex align-items-center p-l-r-0">
-                                        <div>
-                                            <figure class="avatar avatar-state-success m-r-15">
-                                                <span class="avatar-title bg-secondary rounded-circle">ار</span>
-                                            </figure>
-                                        </div>
-                                        <div>
-                                            <h6 class="m-b-0">استیو راجرز</h6>
-                                            <small class="text-muted">مشاور املاک</small>
-                                        </div>
-                                        <div class="ml-auto">
-                                            <span class="badge badge-warning mr-2 d-sm-inline d-none">در انتظار</span>
-                                            <div class="dropdown">
-                                                <a href="#" data-toggle="dropdown" class="btn btn-outline-light btn-sm" aria-haspopup="true" aria-expanded="false">
-                                                    <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
-                                                </a>
-                                                <div class="dropdown-menu dropdown-menu-right">
-                                                    <a href="#" class="dropdown-item">مشاهده</a>
-                                                    <a href="#" class="dropdown-item">ارسال پیام</a>
-                                                    <a href="#" class="dropdown-item">اختصاص دادن</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item d-flex align-items-center p-l-r-0">
-                                        <div>
-                                            <figure class="avatar avatar-state-success m-r-15">
-                                                <img src="{{ asset('assets/back-end/assets/media/image/user/women_avatar1.jpg') }}" class="rounded-circle" alt="image">
-                                            </figure>
-                                        </div>
-                                        <div>
-                                            <h6 class="m-b-0">پیتر پارکر</h6>
-                                            <small class="text-muted">مهندس</small>
-                                        </div>
-                                        <div class="ml-auto">
-                                            <span class="badge badge-danger mr-2 d-sm-inline d-none">رد شده</span>
-                                            <div class="dropdown">
-                                                <a href="#" data-toggle="dropdown" class="btn btn-outline-light btn-sm" aria-haspopup="true" aria-expanded="false">
-                                                    <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
-                                                </a>
-                                                <div class="dropdown-menu dropdown-menu-right">
-                                                    <a href="#" class="dropdown-item">مشاهده</a>
-                                                    <a href="#" class="dropdown-item">ارسال پیام</a>
-                                                    <a href="#" class="dropdown-item">اختصاص دادن</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                </ul>
-                                <div class="mt-3 text-center">
-                                    <a href="#">
-                                        مشاهده همه
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-6 col-md-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title">مجموع فروش شرکت</h6>
-                                <p class="text-muted">مجموع فروش</p>
-                                <h2 class="number-font">69,453</h2>
-                                <div class="progress" style="height: 10px">
-                                    <div class="progress-bar w-25 bg-primary" role="progressbar"></div>
-                                    <div class="progress-bar w-50 bg-info" role="progressbar"></div>
-                                    <div class="progress-bar w-25 bg-warning" role="progressbar"></div>
-                                </div>
-                                <div class="row mt-3 pt-3">
-                                    <div class="col border-right">
-                                        <p class="mb-0">
-                                            <span class="fa fa-circle text-primary mr-1"></span>
-                                            فروش‌ها
-                                        </p>
-                                        <h5 class="mt-1 mb-0">25%</h5>
-                                    </div>
-                                    <div class="col border-right">
-                                        <p class="mb-0">
-                                            <span class="fa fa-circle text-info mr-1"></span>
-                                            بازاریابی
-                                        </p>
-                                        <h5 class="mt-1 mb-0">50%</h5>
-                                    </div>
-                                    <div class="col">
-                                        <p class="mb-0">
-                                            <span class="fa fa-circle text-warning mr-1"></span>
-                                            دارایی
-                                        </p>
-                                        <h5 class="mt-1 mb-0">25%</h5>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title">لیست وظایف روزانه</h6>
-                                <div class="custom-control custom-checkbox-success custom-checkbox todo-item">
-                                    <input type="checkbox" class="custom-control-input" id="customCheck1">
-                                    <label class="custom-control-label d-flex justify-content-between" for="customCheck1">لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم
-                                        <small class="text-muted font-size-11 text-right">13 تیر 1398</small>
-                                    </label>
-                                </div>
-                                <div class="custom-control custom-checkbox-success custom-checkbox-success custom-checkbox todo-item">
-                                    <input type="checkbox" class="custom-control-input" id="customCheck2" checked>
-                                    <label class="custom-control-label d-flex justify-content-between" for="customCheck2">لورم ایپسوم متن ساختگی
-                                        <small class="text-muted font-size-11 text-right">دی 1398</small>
-                                    </label>
-                                </div>
-                                <div class="custom-control custom-checkbox-success custom-checkbox todo-item">
-                                    <input type="checkbox" class="custom-control-input" id="customCheck3">
-                                    <label class="custom-control-label d-flex justify-content-between" for="customCheck3">لورم ایپسوم متن ساختگی با تولید
-                                        <small class="text-muted font-size-11 text-right">13 تیر 1398</small>
-                                    </label>
-                                </div>
-                                <div class="custom-control custom-checkbox-success custom-checkbox todo-item">
-                                    <input type="checkbox" class="custom-control-input" id="customCheck4" checked>
-                                    <label class="custom-control-label d-flex justify-content-between" for="customCheck4">لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم چاپ
-                                        <small class="text-muted font-size-11 text-right">10 شهریور 1398</small>
-                                    </label>
-                                </div>
-                                <div class="custom-control custom-checkbox-success custom-checkbox todo-item">
-                                    <input type="checkbox" class="custom-control-input" id="customCheck5">
-                                    <label class="custom-control-label d-flex justify-content-between" for="customCheck5">لورم ایپسوم متن ساختگی با تولید سادگی
-                                        <small class="text-muted font-size-11 text-right">13 تیر 1398</small>
-                                    </label>
-                                </div>
-                                <div class="custom-control custom-checkbox custom-checkbox-success todo-item">
-                                    <input type="checkbox" class="custom-control-input" id="customCheck6">
-                                    <label class="custom-control-label d-flex justify-content-between" for="customCheck6">لورم ایپسوم متن ساختگی با تولید
-                                        <small class="text-muted font-size-11 text-right">27 مرداد 1398</small>
-                                    </label>
-                                </div>
-                                <div class="custom-control custom-checkbox-success custom-checkbox todo-item">
-                                    <input type="checkbox" class="custom-control-input" id="customCheck7" checked>
-                                    <label class="custom-control-label d-flex justify-content-between" for="customCheck7">لورم ایپسوم متن ساختگی
-                                        <small class="text-muted font-size-11 text-right">13 تیر 1398</small>
-                                    </label>
-                                </div>
-                                <form class="mt-4">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" aria-label="متن نمونه" placeholder="وظیفه جدید" aria-describedby="button-addon1">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button" id="button-addon1">افزودن
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
+                            <span class="avatar avatar-sm bg-secondary-bright text-secondary rounded-circle"><i data-feather="users" class="width-18 height-18"></i></span>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
 
+        <div class="row">
+            <div class="col-sm-6 col-xl-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small mb-1">مقالات</div>
+                        <div class="h4 mb-0 font-weight-bold">{{ number_format($stats['articles']) }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small mb-1">فروش بازاریابی در انتظار حسابداری</div>
+                        <div class="h4 mb-0 font-weight-bold text-warning">{{ number_format($stats['marketing_pending']) }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small mb-1">کدهای هدیه</div>
+                        <div class="h4 mb-0 font-weight-bold">{{ number_format($stats['gift_codes']) }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small mb-1">کدهای تخفیف</div>
+                        <div class="h4 mb-0 font-weight-bold">{{ number_format($stats['discount_codes']) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <!-- end::container -->
-
 </div>
-<!-- end::main-content -->
-
 @endsection

@@ -15,11 +15,11 @@
 
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-body">
-                <p class="text-muted mb-0">خروجی به‌صورت فایل‌های <strong>CSV</strong> (سازگار با Excel) داخل یک بستهٔ <strong>ZIP</strong>؛ برای هر بخش اگر داده‌ای نباشد، فایل آن در بسته قرار نمی‌گیرد. ابتدا بخش‌ها را انتخاب کنید، سپس ساخت بسته را بزنید؛ مرورگر به‌صورت خودکار به صفحهٔ دانلود هدایت می‌شود.</p>
+                <p class="text-muted mb-0">یک فایل <strong>CSV</strong> (با BOM برای Excel) دانلود می‌شود؛ هر بخش انتخاب‌شده با یک سربرگ جدا می‌شود. بخش‌های بدون داده در فایل نمی‌آیند.</p>
             </div>
         </div>
 
-        <form method="post" action="{{ route('admin.technical-backup.prepare') }}" class="card border-0 shadow-sm">
+        <form method="post" action="{{ route('admin.technical-backup.download') }}" class="card border-0 shadow-sm">
             @csrf
             <div class="card-body">
                 <h6 class="font-weight-bold mb-3">انتخاب بخش‌ها</h6>
@@ -35,7 +35,7 @@
                 </div>
             </div>
             <div class="card-footer bg-white">
-                <button type="submit" class="btn btn-primary">ساخت بسته و شروع دانلود</button>
+                <button type="submit" class="btn btn-primary">دانلود CSV</button>
             </div>
         </form>
     </div>

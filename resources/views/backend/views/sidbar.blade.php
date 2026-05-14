@@ -1,18 +1,16 @@
 <div class="navigation-menu-body">
     <ul>
         <li class="navigation-divider">صفحات : </li>
-        @if(auth('admin')->user()->is_super)
-        <li>
-            <a class="{{ request()->routeIs('admin.managers.*') ? 'active' : '' }}" href="{{ route('admin.managers.index') }}">
-                <i class="nav-link-icon" data-feather="shield"></i>
-                <span>مدیران و دسترسی‌ها</span>
-            </a>
-        </li>
-        @endif
         <li>
             <a class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                 <i class="nav-link-icon" data-feather="bar-chart-2"></i>
                 <span>داشبورد مدیریت</span>
+            </a>
+        </li>
+        <li>
+            <a class="{{ request()->routeIs('admin.orders.supply') || request()->routeIs('admin.orders.supply.show') ? 'active' : '' }}" href="{{ route('admin.orders.supply') }}">
+                <i class="nav-link-icon" data-feather="truck"></i>
+                <span>داشبورد تأمین</span>
             </a>
         </li>
         <li class="{{ request()->routeIs('admin.dashboard.accounting') || request()->routeIs('admin.accounting.*') ? 'open' : '' }}">
@@ -48,12 +46,6 @@
                     <a class="{{ request()->routeIs('admin.marketing.sales.index') || request()->routeIs('admin.marketing.sales.show') ? 'active' : '' }}" href="{{ route('admin.marketing.sales.index') }}">فروش‌های من</a>
                 </li>
             </ul>
-        </li>
-        <li>
-            <a class="{{ request()->routeIs('admin.orders.supply') || request()->routeIs('admin.orders.supply.show') ? 'active' : '' }}" href="{{ route('admin.orders.supply') }}">
-                <i class="nav-link-icon" data-feather="truck"></i>
-                <span>داشبورد تأمین</span>
-            </a>
         </li>
         <li class="{{ request()->routeIs('admin.category.*') ? 'open' : '' }}">
             <a href="javascript:;">
@@ -97,7 +89,7 @@
                 </li>
             </ul>
         </li>
-        <li class="{{ request()->routeIs('admin.orders.*') ? 'open' : '' }}">
+        <li class="{{ request()->routeIs('admin.orders.index') || request()->routeIs('admin.orders.show') || request()->routeIs('admin.orders.update-status') || request()->routeIs('admin.orders.toggle-supply') ? 'open' : '' }}">
             <a href="javascript:;">
                 <i class="nav-link-icon" data-feather="file-text"></i>
                 <span>فاکتورها</span>
@@ -164,12 +156,6 @@
                 </li>
             </ul>
         </li>
-        <li>
-            <a class="{{ request()->routeIs('admin.contact-settings.*') ? 'active' : '' }}" href="{{ route('admin.contact-settings.edit') }}">
-                <i class="nav-link-icon" data-feather="phone"></i>
-                <span>مدیریت ارتباطات</span>
-            </a>
-        </li>
         <li class="{{ request()->routeIs('admin.shipping-configs.*') ? 'open' : '' }}">
             <a href="javascript:;">
                 <i class="nav-link-icon" data-feather="truck"></i>
@@ -185,10 +171,24 @@
             </ul>
         </li>
         <li>
+            <a class="{{ request()->routeIs('admin.contact-settings.*') ? 'active' : '' }}" href="{{ route('admin.contact-settings.edit') }}">
+                <i class="nav-link-icon" data-feather="phone"></i>
+                <span>مدیریت ارتباطات</span>
+            </a>
+        </li>
+        <li>
             <a class="{{ request()->routeIs('admin.technical-backup.*') ? 'active' : '' }}" href="{{ route('admin.technical-backup.index') }}">
                 <i class="nav-link-icon" data-feather="download"></i>
                 <span>پشتیبان‌گیری فنی</span>
             </a>
         </li>
+        @if(auth('admin')->user()->is_super)
+        <li>
+            <a class="{{ request()->routeIs('admin.managers.*') ? 'active' : '' }}" href="{{ route('admin.managers.index') }}">
+                <i class="nav-link-icon" data-feather="shield"></i>
+                <span>مدیران و دسترسی‌ها</span>
+            </a>
+        </li>
+        @endif
     </ul>
 </div>

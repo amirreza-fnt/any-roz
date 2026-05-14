@@ -15,10 +15,7 @@ use App\Models\ShippingConfig;
 use App\Models\TypeOfWeight;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
-use ZipArchive;
 
 class TechnicalBackupController extends Controller
 {
@@ -43,48 +40,7 @@ class TechnicalBackupController extends Controller
         ]);
     }
 
-    public function prepare(Request $request)
-    {
-        if (! class_exists(ZipArchive::class)) {
-            message('error', 'افزونهٔ ZipArchive روی سرور فعال نیست.');
-
-            return redirect()->back();
-        }
-
-        $package = $this->buildZipPackage($request);
-        if ($package === null) {
-            return redirect()->back();
-        }
-
-        $token = Str::random(48);
-        Cache::put('technical-backup:'.$token, $package, now()->addMinutes(10));
-
-        return redirect()->route('admin.technical-backup.fetch', ['token' => $token]);
-    }
-
-    public function fetch(string $token)
-    {
-        $payload = Cache::pull('technical-backup:'.$token);
-        if (! is_array($payload) || empty($payload['path']) || ! is_file($payload['path'])) {
-            abort(404, 'لینک دانلود منقضی شده یا نامعتبر است.');
-        }
-
-        $filename = $payload['filename'] ?? 'backup.zip';
-        $path = $payload['path'];
-        $length = (string) filesize($path);
-
-        return response()->download($path, $filename, [
-            'Content-Type' => 'application/octet-stream',
-            'Content-Length' => $length,
-            'Cache-Control' => 'private, no-store, must-revalidate',
-            'Pragma' => 'public',
-        ])->deleteFileAfterSend(true);
-    }
-
-    /**
-     * @return array{path: string, filename: string}|null
-     */
-    private function buildZipPackage(Request $request): ?array
+    public function download(Request $request)
     {
         $allowed = array_keys(self::MODULE_LABELS);
         $selected = $request->input('modules', []);
@@ -95,11 +51,11 @@ class TechnicalBackupController extends Controller
         if ($selected === []) {
             message('warning', 'حداقل یک بخش را برای خروج انتخاب کنید.');
 
-            return null;
+            return redirect()->back();
         }
 
         $warnings = [];
-        $files = [];
+        $blocks = [];
 
         foreach ($selected as $key) {
             $csv = match ($key) {
@@ -118,40 +74,37 @@ class TechnicalBackupController extends Controller
             };
 
             if ($csv === null) {
-                $warnings[] = self::MODULE_LABELS[$key].': هنوز داده‌ای وجود ندارد یا جدول در دسترس نیست.';
+                $warnings[] = self::MODULE_LABELS[$key].': داده‌ای برای خروج نبود.';
 
                 continue;
             }
-            $files[$key.'.csv'] = $csv;
+
+            $blocks[] = '### '.self::MODULE_LABELS[$key].' ('.$key.") ###\r\n".ltrim($csv, "\xEF\xBB\xBF");
         }
 
-        if ($files === []) {
-            message('warning', implode(' ', $warnings) ?: 'هیچ فایلی برای خروج ساخته نشد.');
+        if ($blocks === []) {
+            message('warning', implode(' ', $warnings) ?: 'خروجی خالی است.');
 
-            return null;
+            return redirect()->route('admin.technical-backup.index');
         }
-
-        $tmp = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'tb-'.uniqid('', true).'.zip';
-        $zip = new ZipArchive;
-        if ($zip->open($tmp, ZipArchive::OVERWRITE | ZipArchive::CREATE) !== true) {
-            message('error', 'ایجاد فایل فشرده با خطا مواجه شد.');
-
-            return null;
-        }
-        foreach ($files as $name => $content) {
-            $zip->addFromString($name, $content);
-        }
-        $zip->close();
 
         if ($warnings !== []) {
-            message('warning', 'بخش‌های بدون داده در بسته قرار نگرفتند. '.implode(' ', $warnings));
+            message('warning', 'بخش‌های بدون داده حذف شدند. '.implode(' ', $warnings));
         } else {
-            message('success', 'بستهٔ پشتیبان آماده شد؛ دانلود آغاز می‌شود.');
+            message('success', 'فایل CSV (سازگار با Excel) آمادهٔ دانلود است.');
         }
 
-        $filename = 'technical-backup-'.date('Y-m-d-His').'.zip';
+        $body = "\xEF\xBB\xBF".implode("\r\n\r\n", $blocks);
+        $filename = 'technical-backup-'.date('Y-m-d-His').'.csv';
 
-        return ['path' => $tmp, 'filename' => $filename];
+        return response($body, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Length' => (string) strlen($body),
+            'Cache-Control' => 'private, no-store, must-revalidate',
+            'Pragma' => 'public',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     private function csvFromRows(array $headers, array $rows): string

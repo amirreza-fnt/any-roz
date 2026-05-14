@@ -80,7 +80,7 @@
             </div>
             <div class="col-lg-12 mb-3">
                 <div class="alert alert-info border-0 shadow-sm small">
-                    همهٔ تیک‌های دسترسی به‌صورت پیش‌فرض خاموش هستند؛ فقط موارد لازم را فعال کنید. برای بخش‌های جدید پنل، پس از افزودن مسیرها به فایل <code>config/admin_access.php</code>، تیک‌های مربوط نیز در همین صفحه ظاهر می‌شوند.
+                    همهٔ تیک‌های دسترسی به‌صورت پیش‌فرض خاموش هستند؛ فقط موارد لازم را فعال کنید.
                 </div>
                 @include('backend.admins._permissions_matrix', ['groups' => $groups, 'admin' => null])
             </div>

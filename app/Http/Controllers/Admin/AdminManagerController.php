@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Support\AdminAccess;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Throwable;
 
 class AdminManagerController extends Controller
 {
@@ -31,20 +31,27 @@ class AdminManagerController extends Controller
         $data = $this->validatedAdmin($request, null);
         $perms = $this->normalizedPermissions($request);
 
-        Admin::create([
-            'first_name' => $data['first_name'],
-            'last_name' => $data['last_name'],
-            'phone' => $data['phone'],
-            'email' => $data['email'] ?: null,
-            'national_id' => $data['national_id'] ?: null,
-            'father_name' => $data['father_name'] ?: null,
-            'birth_date' => $data['birth_date'] ?: null,
-            'position' => $data['position'] ?: null,
-            'password' => Hash::make($data['password']),
-            'permissions' => $perms,
-            'is_active' => $request->boolean('is_active', true),
-            'is_super' => $request->boolean('is_super') && auth('admin')->user()->is_super,
-        ]);
+        try {
+            Admin::create([
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name'],
+                'phone' => $data['phone'],
+                'email' => $data['email'] ?: null,
+                'national_id' => $data['national_id'] ?: null,
+                'father_name' => $data['father_name'] ?: null,
+                'birth_date' => $data['birth_date'] ?: null,
+                'position' => $data['position'] ?: null,
+                'password' => $data['password'],
+                'permissions' => $perms,
+                'is_active' => $request->boolean('is_active', true),
+                'is_super' => $request->boolean('is_super') && auth('admin')->user()->is_super,
+            ]);
+        } catch (Throwable $e) {
+            report($e);
+            message('error', 'ثبت مدیر انجام نشد. اگر جدول admins را migrate نکرده‌اید، ابتدا php artisan migrate را اجرا کنید.');
+
+            return redirect()->back()->withInput();
+        }
 
         message('success', 'مدیر جدید ثبت شد.');
 
@@ -92,7 +99,7 @@ class AdminManagerController extends Controller
         }
 
         if (! empty($data['password'])) {
-            $manager->password = Hash::make($data['password']);
+            $manager->password = $data['password'];
         }
 
         $manager->save();
@@ -124,9 +131,15 @@ class AdminManagerController extends Controller
 
     private function validatedAdmin(Request $request, ?Admin $existing): array
     {
+        foreach (['birth_date', 'email', 'national_id', 'father_name', 'position'] as $k) {
+            if ($request->input($k) === '') {
+                $request->merge([$k => null]);
+            }
+        }
+
         $id = $existing?->id;
 
-        return $request->validate([
+        $data = $request->validate([
             'first_name' => ['required', 'string', 'max:120'],
             'last_name' => ['required', 'string', 'max:120'],
             'phone' => ['required', 'string', 'max:20', Rule::unique('admins', 'phone')->ignore($id)],
@@ -137,6 +150,14 @@ class AdminManagerController extends Controller
             'position' => ['nullable', 'string', 'max:255'],
             'password' => [$existing ? 'nullable' : 'required', 'string', 'min:8', 'confirmed'],
         ]);
+
+        foreach (['email', 'national_id', 'father_name', 'birth_date', 'position'] as $k) {
+            if (array_key_exists($k, $data) && $data[$k] === '') {
+                $data[$k] = null;
+            }
+        }
+
+        return $data;
     }
 
     /**

@@ -35,6 +35,15 @@
             </div>
         @endif
 
+        @if (session('marketing_approved_order_id'))
+            <div class="alert alert-success border-0 shadow-sm d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <span>فاکتور با شمارهٔ <strong class="text-monospace" dir="ltr">{{ session('marketing_approved_order_number') }}</strong> ایجاد شد.</span>
+                @if(auth('admin')->user()->hasPermission('orders.view'))
+                    <a href="{{ route('admin.orders.show', session('marketing_approved_order_id')) }}" class="btn btn-sm btn-outline-success">مشاهدهٔ فاکتور</a>
+                @endif
+            </div>
+        @endif
+
         <div class="row">
             <div class="col-lg-7 mb-3">
                 <div class="card border-0 shadow-sm">
@@ -111,7 +120,6 @@
                         <div class="card-body">
                             <form action="{{ route('admin.accounting.marketing-sales.approve', ['marketing_sale' => $sale->id]) }}" method="post">
                                 @csrf
-                                @method('PATCH')
                                 <div class="form-group">
                                     <label class="small text-muted">یادداشت حسابدار (اختیاری)</label>
                                     <textarea name="accountant_note" class="form-control" rows="2" maxlength="2000">{{ old('accountant_note') }}</textarea>
@@ -128,7 +136,6 @@
                         <div class="card-body">
                             <form action="{{ route('admin.accounting.marketing-sales.reject', ['marketing_sale' => $sale->id]) }}" method="post" onsubmit="return confirm('فروش رد شود؟ در صورت وجود فاکتور، وضعیت آن به «لغو شده» تغییر می‌کند.');">
                                 @csrf
-                                @method('PATCH')
                                 <div class="form-group">
                                     <label class="small text-muted">دلیل / یادداشت</label>
                                     <textarea name="accountant_note" class="form-control" rows="2" maxlength="2000"></textarea>
