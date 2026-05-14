@@ -16,7 +16,26 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::get('dashboard', App\Http\Controllers\Admin\Dashboard::class)->name('dashboard');
     Route::get('dashboard/accounting', App\Http\Controllers\Admin\DashboardAccounting::class)->name('dashboard.accounting');
     Route::get('dashboard/supply', App\Http\Controllers\Admin\DashboardSupply::class)->name('dashboard.supply');
-    Route::get('dashboard/marketing', App\Http\Controllers\Admin\DashboardMarketing::class)->name('dashboard.marketing');
+    Route::get('dashboard/marketing', App\Http\Controllers\Admin\Marketing\MarketingPanelController::class)->name('dashboard.marketing');
+
+    Route::prefix('marketing')->name('marketing.')->group(function () {
+        Route::get('api/products', [App\Http\Controllers\Admin\Marketing\MarketingLookupController::class, 'products'])->name('api.products');
+        Route::get('api/products/{product}', [App\Http\Controllers\Admin\Marketing\MarketingLookupController::class, 'productJson'])->name('api.products.show');
+        Route::get('api/buyers', [App\Http\Controllers\Admin\Marketing\MarketingLookupController::class, 'buyers'])->name('api.buyers');
+        Route::get('api/buyers/{buyer}', [App\Http\Controllers\Admin\Marketing\MarketingLookupController::class, 'buyerJson'])->name('api.buyers.show');
+        Route::get('api/provinces', [App\Http\Controllers\Admin\Marketing\MarketingLookupController::class, 'provinces'])->name('api.provinces');
+        Route::get('api/cities', [App\Http\Controllers\Admin\Marketing\MarketingLookupController::class, 'cities'])->name('api.cities');
+        Route::resource('buyers', App\Http\Controllers\Admin\Marketing\MarketingBuyerController::class);
+        Route::resource('sales', App\Http\Controllers\Admin\Marketing\MarketingSaleController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
+    });
+
+    Route::prefix('accounting')->name('accounting.')->group(function () {
+        Route::get('marketing-sales', [App\Http\Controllers\Admin\Accounting\MarketingSaleReviewController::class, 'index'])->name('marketing-sales.index');
+        Route::get('marketing-sales/{marketing_sale}', [App\Http\Controllers\Admin\Accounting\MarketingSaleReviewController::class, 'show'])->name('marketing-sales.show');
+        Route::patch('marketing-sales/{marketing_sale}/approve', [App\Http\Controllers\Admin\Accounting\MarketingSaleReviewController::class, 'approve'])->name('marketing-sales.approve');
+        Route::patch('marketing-sales/{marketing_sale}/reject', [App\Http\Controllers\Admin\Accounting\MarketingSaleReviewController::class, 'reject'])->name('marketing-sales.reject');
+    });
+
     Route::patch('category/{category}/toggle-status', [App\Http\Controllers\Admin\Products\CategoryController::class, 'toggleStatus'])
         ->name('category.toggle-status');
     Route::resource('category', App\Http\Controllers\Admin\Products\CategoryController::class);

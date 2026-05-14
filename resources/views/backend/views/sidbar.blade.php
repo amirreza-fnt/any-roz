@@ -7,17 +7,39 @@
                 <span>داشبورد مدیریت</span>
             </a>
         </li>
-        <li>
-            <a class="{{ request()->routeIs('admin.dashboard.accounting') ? 'active' : '' }}" href="{{ route('admin.dashboard.accounting') }}">
+        <li class="{{ request()->routeIs('admin.dashboard.accounting') || request()->routeIs('admin.accounting.*') ? 'open' : '' }}">
+            <a href="javascript:;">
                 <i class="nav-link-icon" data-feather="pie-chart"></i>
-                <span>داشبورد حسابداری</span>
+                <span>حسابداری</span>
             </a>
+            <ul>
+                <li>
+                    <a class="{{ request()->routeIs('admin.dashboard.accounting') ? 'active' : '' }}" href="{{ route('admin.dashboard.accounting') }}">داشبورد حسابداری</a>
+                </li>
+                <li>
+                    <a class="{{ request()->routeIs('admin.accounting.marketing-sales.*') ? 'active' : '' }}" href="{{ route('admin.accounting.marketing-sales.index') }}">بررسی فروش بازاریابان</a>
+                </li>
+            </ul>
         </li>
-        <li>
-            <a class="{{ request()->routeIs('admin.dashboard.marketing') ? 'active' : '' }}" href="{{ route('admin.dashboard.marketing') }}">
+        <li class="{{ request()->routeIs('admin.dashboard.marketing') || request()->routeIs('admin.marketing.*') ? 'open' : '' }}">
+            <a href="javascript:;">
                 <i class="nav-link-icon" data-feather="trending-up"></i>
-                <span>داشبورد بازاریابی</span>
+                <span>بازاریابی</span>
             </a>
+            <ul>
+                <li>
+                    <a class="{{ request()->routeIs('admin.dashboard.marketing') ? 'active' : '' }}" href="{{ route('admin.dashboard.marketing') }}">داشبورد بازاریابی</a>
+                </li>
+                <li>
+                    <a class="{{ request()->routeIs('admin.marketing.buyers.*') ? 'active' : '' }}" href="{{ route('admin.marketing.buyers.index') }}">خریداران (CRM)</a>
+                </li>
+                <li>
+                    <a class="{{ request()->routeIs('admin.marketing.sales.create') ? 'active' : '' }}" href="{{ route('admin.marketing.sales.create') }}">ثبت فروش</a>
+                </li>
+                <li>
+                    <a class="{{ request()->routeIs('admin.marketing.sales.index') || request()->routeIs('admin.marketing.sales.show') ? 'active' : '' }}" href="{{ route('admin.marketing.sales.index') }}">فروش‌های من</a>
+                </li>
+            </ul>
         </li>
         <li>
             <a class="{{ request()->routeIs('admin.orders.supply') || request()->routeIs('admin.orders.supply.show') ? 'active' : '' }}" href="{{ route('admin.orders.supply') }}">

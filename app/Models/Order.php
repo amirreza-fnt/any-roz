@@ -26,8 +26,15 @@ class Order extends Model
         self::STATUS_CANCELLED,
     ];
 
+    public const SOURCE_SITE = 'site';
+
+    public const SOURCE_MARKETING = 'marketing';
+
     protected $fillable = [
         'user_id',
+        'source',
+        'marketer_id',
+        'marketing_sale_id',
         'order_number',
         'total_amount',
         'shipping_fee',
@@ -93,6 +100,11 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function sourceMarketingSale(): BelongsTo
+    {
+        return $this->belongsTo(MarketingSale::class, 'marketing_sale_id');
     }
 
     public function items(): HasMany

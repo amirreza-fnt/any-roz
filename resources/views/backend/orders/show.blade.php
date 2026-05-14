@@ -202,7 +202,12 @@
 
         <div id="invoice-print" class="invoice-sheet mb-5 {{ $hideFinancials ? 'is-supply-view' : '' }}">
             <div class="invoice-hero">
-                <h1>فاکتور فروش</h1>
+                <h1 class="d-flex flex-wrap align-items-center gap-2">
+                    فاکتور فروش
+                    @if (($order->source ?? \App\Models\Order::SOURCE_SITE) === \App\Models\Order::SOURCE_MARKETING)
+                        <span class="badge badge-light text-primary border" style="font-size:0.7rem">فروش بازاریابی</span>
+                    @endif
+                </h1>
                 <div class="sub d-flex flex-wrap gap-3">
                     <span>شماره سفارش: <strong>{{ $order->order_number }}</strong></span>
                     <span>تاریخ: <strong>{{ $order->created_at?->format('Y/m/d H:i') }}</strong></span>
@@ -214,10 +219,16 @@
                     <div class="inv-card">
                         <h3>خریدار</h3>
                         <div class="inv-kv">
-                            <div><strong>{{ $order->user?->name ?? '—' }}</strong></div>
-                            <div class="text-muted small">{{ $order->user?->email }}</div>
-                            @if ($order->user?->mobile)
-                                <div class="text-muted small text-monospace" dir="ltr">{{ $order->user->mobile }}</div>
+                            @if (($order->source ?? \App\Models\Order::SOURCE_SITE) === \App\Models\Order::SOURCE_MARKETING)
+                                <div><strong>{{ $order->shipping_recipient_name }}</strong></div>
+                                <div class="text-muted small text-monospace" dir="ltr">{{ $order->shipping_phone }}</div>
+                                <div class="text-muted small mt-1">ثبت‌شده از پنل بازاریابی @if($order->marketer_id) — بازاریاب #{{ $order->marketer_id }} @endif</div>
+                            @else
+                                <div><strong>{{ $order->user?->name ?? '—' }}</strong></div>
+                                <div class="text-muted small">{{ $order->user?->email }}</div>
+                                @if ($order->user?->mobile)
+                                    <div class="text-muted small text-monospace" dir="ltr">{{ $order->user->mobile }}</div>
+                                @endif
                             @endif
                         </div>
                     </div>
@@ -293,6 +304,9 @@
                                 <div class="font-weight-600">{{ $line->product_name }}</div>
                                 @if ($line->product_code)
                                     <div class="small text-muted text-monospace">کد: {{ $line->product_code }}</div>
+                                @endif
+                                @if (! empty($line->product_options['quantity_text']))
+                                    <div class="small text-info mt-1">مقدار / شرح فروش: {{ $line->product_options['quantity_text'] }}</div>
                                 @endif
                                 @if ($line->product_options && count($line->product_options))
                                     <details class="small mt-1"><summary>ویژگی‌ها</summary><pre class="mb-0 mt-1 small bg-light p-2 rounded">{{ json_encode($line->product_options, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) }}</pre></details>

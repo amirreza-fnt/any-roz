@@ -73,8 +73,16 @@
                                 <tr>
                                     <td class="align-middle font-weight-600 text-monospace">{{ $o->order_number }}</td>
                                     <td class="align-middle">
-                                        <div class="font-weight-500">{{ $o->user?->name ?? '—' }}</div>
-                                        <div class="small text-muted">{{ $o->user?->email }}</div>
+                                        @if (($o->source ?? \App\Models\Order::SOURCE_SITE) === \App\Models\Order::SOURCE_MARKETING)
+                                            <div class="d-flex align-items-center flex-wrap gap-1">
+                                                <span class="badge badge-primary" style="font-size:0.65rem">بازاریابی</span>
+                                            </div>
+                                            <div class="font-weight-500 mt-1">{{ $o->shipping_recipient_name ?: '—' }}</div>
+                                            <div class="small text-muted text-monospace" dir="ltr">{{ $o->shipping_phone }}</div>
+                                        @else
+                                            <div class="font-weight-500">{{ $o->user?->name ?? '—' }}</div>
+                                            <div class="small text-muted">{{ $o->user?->email }}</div>
+                                        @endif
                                     </td>
                                     @unless ($supplyMode)
                                         <td class="align-middle">{{ number_format((float) $o->final_amount) }} <span class="text-muted small">تومان</span></td>
