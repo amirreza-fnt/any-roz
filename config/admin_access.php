@@ -15,6 +15,7 @@
 return [
     'route_permissions' => [
         'admin.logout' => '*',
+        'admin.login' => '*',
 
         'admin.dashboard' => 'dashboard.main.view',
         'admin.dashboard.accounting' => 'dashboard.accounting.view',
@@ -134,6 +135,11 @@ return [
         'admin.accounting.marketing-sales.show' => 'accounting.marketing_sales.view_detail',
         'admin.accounting.marketing-sales.approve' => 'accounting.marketing_sales.approve',
         'admin.accounting.marketing-sales.reject' => 'accounting.marketing_sales.reject',
+
+        'admin.accounting.professional.index' => 'accounting.professional.view',
+        'admin.accounting.professional.export' => 'accounting.professional.export',
+        'admin.accounting.site-sales.index' => 'accounting.site_sales.view',
+        'admin.accounting.site-sales.export' => 'accounting.site_sales.export',
     ],
 
     'permission_ui' => [
@@ -282,6 +288,16 @@ return [
                 ['key' => 'accounting.marketing_sales.view_detail', 'label' => 'مشاهدهٔ جزئیات'],
                 ['key' => 'accounting.marketing_sales.approve', 'label' => 'تأیید و صدور فاکتور'],
                 ['key' => 'accounting.marketing_sales.reject', 'label' => 'رد فروش'],
+            ],
+        ],
+        [
+            'id' => 'accounting_suite',
+            'label' => 'حسابداری — گزارش‌ها و فروش سایت',
+            'items' => [
+                ['key' => 'accounting.professional.view', 'label' => 'برنامهٔ جامع حسابداری — مشاهده'],
+                ['key' => 'accounting.professional.export', 'label' => 'برنامهٔ جامع حسابداری — خروجی CSV'],
+                ['key' => 'accounting.site_sales.view', 'label' => 'حسابداری فروش سایت — مشاهده'],
+                ['key' => 'accounting.site_sales.export', 'label' => 'حسابداری فروش سایت — خروجی CSV'],
             ],
         ],
     ],

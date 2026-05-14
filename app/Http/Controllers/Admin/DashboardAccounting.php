@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\MarketingSale;
 use App\Models\Order;
 use App\Services\Accounting\AccountingAnalyticsService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class DashboardAccounting extends Controller
@@ -31,8 +33,8 @@ class DashboardAccounting extends Controller
 
         $pendingMarketingSales = 0;
         if (Schema::hasTable('marketing_sales')) {
-            $pendingMarketingSales = (int) \Illuminate\Support\Facades\DB::table('marketing_sales')
-                ->where('status', 'pending_accounting')
+            $pendingMarketingSales = (int) DB::table('marketing_sales')
+                ->where('status', MarketingSale::STATUS_PENDING)
                 ->count();
         }
 

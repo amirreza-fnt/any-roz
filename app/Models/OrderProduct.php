@@ -24,6 +24,7 @@ class OrderProduct extends Model
     protected $casts = [
         'product_options' => 'array',
         'quantity' => 'integer',
+        'unit_price' => 'integer',
         'discount_percent' => 'integer',
         'discount_amount' => 'integer',
         'final_price' => 'integer',
