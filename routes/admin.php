@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminManagerController;
 use App\Http\Controllers\Admin\Accounting\AccountingProfessionalController;
 use App\Http\Controllers\Admin\Accounting\AccountingSiteSalesController;
+use App\Http\Controllers\Admin\Accounting\FlowchartController;
 use App\Http\Controllers\Admin\Accounting\MarketingSaleReviewController;
 use App\Http\Controllers\Admin\Articles\ArticleController;
 use App\Http\Controllers\Admin\Auth\AdminLoginController;
@@ -59,6 +60,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::get('marketing-sales/{marketing_sale}', [MarketingSaleReviewController::class, 'show'])->name('marketing-sales.show');
                 Route::post('marketing-sales/{marketing_sale}/approve', [MarketingSaleReviewController::class, 'approve'])->name('marketing-sales.approve');
                 Route::post('marketing-sales/{marketing_sale}/reject', [MarketingSaleReviewController::class, 'reject'])->name('marketing-sales.reject');
+
+                Route::get('flowchart', [FlowchartController::class, 'index'])->name('flowchart.index');
+                Route::get('flowchart/tree', [FlowchartController::class, 'treeJson'])->name('flowchart.tree');
+                Route::post('flowchart', [FlowchartController::class, 'store'])->name('flowchart.store');
+                Route::put('flowchart/{flowchartNode}', [FlowchartController::class, 'update'])->name('flowchart.update');
+                Route::delete('flowchart/{flowchartNode}', [FlowchartController::class, 'destroy'])->name('flowchart.destroy');
+                Route::post('flowchart/{flowchartNode}/move', [FlowchartController::class, 'move'])->name('flowchart.move');
             });
 
             Route::get('orders/supply', [OrderController::class, 'supplyIndex'])->name('orders.supply');

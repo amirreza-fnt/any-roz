@@ -140,6 +140,13 @@ return [
         'admin.accounting.professional.export' => 'accounting.professional.export',
         'admin.accounting.site-sales.index' => 'accounting.site_sales.view',
         'admin.accounting.site-sales.export' => 'accounting.site_sales.export',
+
+        'admin.accounting.flowchart.index' => 'accounting.flowchart.view',
+        'admin.accounting.flowchart.tree' => 'accounting.flowchart.view',
+        'admin.accounting.flowchart.store' => 'accounting.flowchart.manage',
+        'admin.accounting.flowchart.update' => 'accounting.flowchart.manage',
+        'admin.accounting.flowchart.destroy' => 'accounting.flowchart.manage',
+        'admin.accounting.flowchart.move' => 'accounting.flowchart.manage',
     ],
 
     'permission_ui' => [
@@ -298,6 +305,14 @@ return [
                 ['key' => 'accounting.professional.export', 'label' => 'برنامهٔ جامع حسابداری — خروجی CSV'],
                 ['key' => 'accounting.site_sales.view', 'label' => 'حسابداری فروش سایت — مشاهده'],
                 ['key' => 'accounting.site_sales.export', 'label' => 'حسابداری فروش سایت — خروجی CSV'],
+            ],
+        ],
+        [
+            'id' => 'accounting_flowchart',
+            'label' => 'حسابداری — فلوچارت سازمانی',
+            'items' => [
+                ['key' => 'accounting.flowchart.view', 'label' => 'مشاهدهٔ فلوچارت'],
+                ['key' => 'accounting.flowchart.manage', 'label' => 'مدیریت فلوچارت (افزودن / ویرایش / حذف)'],
             ],
         ],
     ],

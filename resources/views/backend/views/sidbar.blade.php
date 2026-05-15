@@ -20,7 +20,7 @@
         </li>
         @endadmincan
 
-        @adminany(['dashboard.accounting.view', 'accounting.professional.view', 'accounting.professional.export', 'accounting.site_sales.view', 'accounting.site_sales.export', 'accounting.marketing_sales.view_list', 'accounting.marketing_sales.view_detail', 'accounting.marketing_sales.approve', 'accounting.marketing_sales.reject'])
+        @adminany(['dashboard.accounting.view', 'accounting.professional.view', 'accounting.professional.export', 'accounting.site_sales.view', 'accounting.site_sales.export', 'accounting.marketing_sales.view_list', 'accounting.marketing_sales.view_detail', 'accounting.marketing_sales.approve', 'accounting.marketing_sales.reject', 'accounting.flowchart.view', 'accounting.flowchart.manage'])
         <li class="{{ request()->routeIs('admin.dashboard.accounting') || request()->routeIs('admin.accounting.*') ? 'open' : '' }}">
             <a href="javascript:;">
                 <i class="nav-link-icon" data-feather="pie-chart"></i>
@@ -47,6 +47,11 @@
                     <a class="{{ request()->routeIs('admin.accounting.marketing-sales.*') ? 'active' : '' }}" href="{{ route('admin.accounting.marketing-sales.index') }}">بررسی فروش بازاریابان</a>
                 </li>
                 @endadminany
+                @admincan('accounting.flowchart.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.accounting.flowchart.*') ? 'active' : '' }}" href="{{ route('admin.accounting.flowchart.index') }}">فلوچارت سازمانی</a>
+                </li>
+                @endadmincan
             </ul>
         </li>
         @endadminany
