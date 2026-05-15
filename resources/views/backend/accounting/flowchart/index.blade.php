@@ -63,7 +63,7 @@
                     <i data-feather="edit-3" style="width:18px;height:18px;vertical-align:middle;margin-left:6px;"></i>
                     <span id="nodeModalTitleText">افزودن نود</span>
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="close text-white" data-dismiss="modal" style="opacity:0.8;font-size:1.4rem;">&times;</button>
             </div>
             <div class="modal-body" style="padding:24px;">
                 <input type="hidden" id="modal-node-id" value="">
@@ -112,7 +112,7 @@
                 </div>
             </div>
             <div class="modal-footer" style="border:none;padding:0 24px 20px;">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius:10px;padding:8px 20px;">انصراف</button>
+                <button type="button" class="btn btn-light" data-dismiss="modal" style="border-radius:10px;padding:8px 20px;">انصراف</button>
                 <button type="button" class="btn btn-primary" onclick="saveNode()" id="modal-save-btn" style="border-radius:10px;padding:8px 24px;">
                     <i data-feather="save" style="width:15px;height:15px;vertical-align:middle;margin-left:4px;"></i>
                     ذخیره
@@ -134,7 +134,7 @@
                 <p style="color:#64748b;font-size:0.85rem;margin-bottom:0;">آیا از حذف <strong id="delete-node-title"></strong> و تمام زیرمجموعه‌هایش مطمئنید؟</p>
             </div>
             <div class="modal-footer justify-content-center" style="border:none;padding:0 24px 24px;gap:8px;">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius:10px;padding:8px 24px;">انصراف</button>
+                <button type="button" class="btn btn-light" data-dismiss="modal" style="border-radius:10px;padding:8px 24px;">انصراف</button>
                 <button type="button" class="btn btn-danger" id="confirm-delete-btn" style="border-radius:10px;padding:8px 24px;">
                     <i data-feather="trash-2" style="width:14px;height:14px;vertical-align:middle;margin-left:4px;"></i>
                     حذف
@@ -368,7 +368,7 @@
         document.getElementById('modal-color').value = '#6366f1';
         document.getElementById('nodeModalTitleText').textContent = 'افزودن نود ریشه';
         resetColorPicker('#6366f1');
-        new bootstrap.Modal(document.getElementById('nodeModal')).show();
+        $('#nodeModal').modal('show');
     };
 
     window.openAddChildModal = function(parentId) {
@@ -381,7 +381,7 @@
         document.getElementById('modal-color').value = '#3b82f6';
         document.getElementById('nodeModalTitleText').textContent = 'افزودن زیرمجموعه';
         resetColorPicker('#3b82f6');
-        new bootstrap.Modal(document.getElementById('nodeModal')).show();
+        $('#nodeModal').modal('show');
     };
 
     window.openEditModal = function(nodeId) {
@@ -396,14 +396,14 @@
         document.getElementById('modal-color').value = node.color || '#6366f1';
         document.getElementById('nodeModalTitleText').textContent = 'ویرایش: ' + node.title;
         resetColorPicker(node.color || '#6366f1');
-        new bootstrap.Modal(document.getElementById('nodeModal')).show();
+        $('#nodeModal').modal('show');
     };
 
     let deleteTargetId = null;
     window.openDeleteModal = function(id, title) {
         deleteTargetId = id;
         document.getElementById('delete-node-title').textContent = title;
-        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        $('#deleteModal').modal('show');
     };
 
     document.getElementById('confirm-delete-btn').addEventListener('click', function() {
@@ -421,7 +421,7 @@
             } else {
                 toastr.error(d.message || 'خطا');
             }
-            bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+            $('#deleteModal').modal('hide');
         })
         .catch(() => toastr.error('خطا در حذف'));
     });
@@ -458,7 +458,7 @@
                 treeData = d.tree;
                 renderTree();
                 toastr.success(isEdit ? 'نود ویرایش شد.' : 'نود افزوده شد.');
-                bootstrap.Modal.getInstance(document.getElementById('nodeModal')).hide();
+                $('#nodeModal').modal('hide');
             } else if (d.errors) {
                 const firstErr = Object.values(d.errors)[0];
                 toastr.error(Array.isArray(firstErr) ? firstErr[0] : firstErr);
