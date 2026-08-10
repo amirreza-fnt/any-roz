@@ -1,0 +1,374 @@
+<div class="navigation-menu-body">
+    <ul>
+        <li class="navigation-divider">صفحات : </li>
+
+        @admincan('dashboard.main.view')
+        <li>
+            <a class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+                <i class="nav-link-icon" data-feather="bar-chart-2"></i>
+                <span>داشبورد مدیریت</span>
+            </a>
+        </li>
+        @endadmincan
+
+<!--        @admincan('dashboard.main.view')-->
+<!--        <li>-->
+<!--            <a class="{{ request()->routeIs('admin.chat') ? 'active' : '' }}" href="{{ route('admin.chat') }}">-->
+<!--<i class="nav-link-icon" data-feather="heart"></i>                <span>داشبورد دکتر (مشاور)</span>-->
+<!--            </a>-->
+<!--        </li>-->
+<!--        @endadmincan-->
+
+        @admincan('dashboard.supply.view')
+        <li>
+            <a class="{{ request()->routeIs('admin.orders.supply') || request()->routeIs('admin.orders.supply.show') ? 'active' : '' }}" href="{{ route('admin.orders.supply') }}">
+                <i class="nav-link-icon" data-feather="truck"></i>
+                <span>داشبورد تأمین</span>
+            </a>
+        </li>
+        @endadmincan
+
+        @adminany(['dashboard.accounting.view', 'accounting.professional.view', 'accounting.professional.export', 'accounting.site_sales.view', 'accounting.site_sales.export', 'accounting.marketing_sales.view_list', 'accounting.marketing_sales.view_detail', 'accounting.marketing_sales.approve', 'accounting.marketing_sales.reject', 'accounting.flowchart.view', 'accounting.flowchart.manage', 'colleague.wholesale.view_list', 'colleague.wholesale.view_detail', 'colleague.wholesale.approve', 'colleague.wholesale.reject'])
+        <li class="{{ request()->routeIs('admin.dashboard.accounting') || request()->routeIs('admin.accounting.*') || request()->routeIs('admin.accounting.colleague-wholesale.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="pie-chart"></i>
+                <span>حسابداری</span>
+            </a>
+            <ul>
+                @admincan('dashboard.accounting.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.dashboard.accounting') ? 'active' : '' }}" href="{{ route('admin.dashboard.accounting') }}">داشبورد حسابداری</a>
+                </li>
+                @endadmincan
+                @admincan('accounting.professional.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.accounting.professional.*') ? 'active' : '' }}" href="{{ route('admin.accounting.professional.index') }}">برنامهٔ جامع حسابداری</a>
+                </li>
+                @endadmincan
+                @admincan('accounting.site_sales.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.accounting.site-sales.*') ? 'active' : '' }}" href="{{ route('admin.accounting.site-sales.index') }}">فروش سایت</a>
+                </li>
+                @endadmincan
+                @adminany(['accounting.marketing_sales.view_list', 'accounting.marketing_sales.view_detail', 'accounting.marketing_sales.approve', 'accounting.marketing_sales.reject'])
+                <li>
+                    <a class="{{ request()->routeIs('admin.accounting.marketing-sales.*') ? 'active' : '' }}" href="{{ route('admin.accounting.marketing-sales.index') }}">بررسی فروش بازاریابان</a>
+                </li>
+                @endadminany
+                @adminany(['colleague.wholesale.view_list', 'colleague.wholesale.view_detail', 'colleague.wholesale.approve', 'colleague.wholesale.reject'])
+                <li>
+                    <a class="{{ request()->routeIs('admin.accounting.colleague-wholesale.*') ? 'active' : '' }}" href="{{ route('admin.accounting.colleague-wholesale.index') }}">بررسی خرید کلی همکاران</a>
+                </li>
+                @endadminany
+                @admincan('accounting.flowchart.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.accounting.flowchart.*') ? 'active' : '' }}" href="{{ route('admin.accounting.flowchart.index') }}">فلوچارت سازمانی</a>
+                </li>
+                @endadmincan
+            </ul>
+        </li>
+        @endadminany
+
+        @adminany(['dashboard.marketing.view', 'marketing.buyers.view', 'marketing.buyers.create', 'marketing.sales.view', 'marketing.sales.create'])
+        <li class="{{ request()->routeIs('admin.dashboard.marketing') || request()->routeIs('admin.marketing.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="trending-up"></i>
+                <span>بازاریابی</span>
+            </a>
+            <ul>
+                @admincan('dashboard.marketing.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.dashboard.marketing') ? 'active' : '' }}" href="{{ route('admin.dashboard.marketing') }}">داشبورد بازاریابی</a>
+                </li>
+                @endadmincan
+                @adminany(['marketing.buyers.view', 'marketing.buyers.create'])
+                <li>
+                    <a class="{{ request()->routeIs('admin.marketing.buyers.*') ? 'active' : '' }}" href="{{ route('admin.marketing.buyers.index') }}">خریداران (CRM)</a>
+                </li>
+                @endadminany
+                @admincan('marketing.sales.create')
+                <li>
+                    <a class="{{ request()->routeIs('admin.marketing.sales.create') ? 'active' : '' }}" href="{{ route('admin.marketing.sales.create') }}">ثبت فروش</a>
+                </li>
+                @endadmincan
+                @admincan('marketing.sales.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.marketing.sales.index') || request()->routeIs('admin.marketing.sales.show') ? 'active' : '' }}" href="{{ route('admin.marketing.sales.index') }}">فروش‌های من</a>
+                </li>
+                @endadmincan
+            </ul>
+        </li>
+        @endadminany
+
+        @adminany(['colleagues.view', 'colleagues.create', 'colleague.sales.view', 'colleague.sales.create', 'colleague.chat.view', 'colleague.chat.send'])
+        <li class="{{ request()->routeIs('admin.colleagues.*') || request()->routeIs('admin.colleague.sales.*') || request()->routeIs('admin.colleague.chat.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="users"></i>
+                <span>همکاران</span>
+            </a>
+            <ul>
+                @admincan('colleague.sales.create')
+                <li>
+                    <a class="{{ request()->routeIs('admin.colleague.sales.create') ? 'active' : '' }}" href="{{ route('admin.colleague.sales.create') }}">ثبت پیش‌فاکتور خرید کلی</a>
+                </li>
+                @endadmincan
+                @admincan('colleague.sales.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.colleague.sales.index') || request()->routeIs('admin.colleague.sales.show') ? 'active' : '' }}" href="{{ route('admin.colleague.sales.index') }}">پیش‌فاکتورهای من</a>
+                </li>
+                @endadmincan
+                @admincan('colleague.chat.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.colleague.chat.*') ? 'active' : '' }}" href="{{ route('admin.colleague.chat.index') }}">چت با پشتیبانی</a>
+                </li>
+                @endadmincan
+                @admincan('colleagues.create')
+                <li>
+                    <a class="{{ request()->routeIs('admin.colleagues.create') ? 'active' : '' }}" href="{{ route('admin.colleagues.create') }}">افزودن همکار</a>
+                </li>
+                @endadmincan
+                @admincan('colleagues.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.colleagues.index') || request()->routeIs('admin.colleagues.show') || request()->routeIs('admin.colleagues.edit') ? 'active' : '' }}" href="{{ route('admin.colleagues.index') }}">لیست و فاکتورهای همکاران</a>
+                </li>
+                @endadmincan
+            </ul>
+        </li>
+        @endadminany
+
+        @adminany(['colleague.support.view', 'colleague.support.send'])
+        <li class="{{ request()->routeIs('admin.colleague.support.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="message-circle"></i>
+                <span>پشتیبانی همکاران</span>
+                @if($chatUnread > 0)
+                    <span class="badge badge-danger ml-auto">{{ $chatUnread }}</span>
+                @endif
+            </a>
+            <ul>
+                @admincan('colleague.support.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.colleague.support.index') ? 'active' : '' }}" href="{{ route('admin.colleague.support.index') }}">گفتگوهای همکاران</a>
+                </li>
+                @endadmincan
+            </ul>
+        </li>
+        @endadminany
+
+        @adminany(['categories.view', 'categories.create'])
+        <li class="{{ request()->routeIs('admin.category.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="layers"></i>
+                <span>دسته‌بندی‌ها</span>
+            </a>
+            <ul>
+                @admincan('categories.create')
+                <li>
+                    <a class="{{ request()->routeIs('admin.category.create') ? 'active' : '' }}" href="{{ route('admin.category.create') }}">افزودن دسته‌بندی</a>
+                </li>
+                @endadmincan
+                @admincan('categories.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.category.index') ? 'active' : '' }}" href="{{ route('admin.category.index') }}">نمایش همهٔ دسته‌ها</a>
+                </li>
+                @endadmincan
+            </ul>
+        </li>
+        @endadminany
+
+        @adminany(['type_of_weights.view', 'type_of_weights.create'])
+        <li class="{{ request()->routeIs('admin.type-of-weights.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="anchor"></i>
+                <span>انواع وزن</span>
+            </a>
+            <ul>
+                @admincan('type_of_weights.create')
+                <li>
+                    <a class="{{ request()->routeIs('admin.type-of-weights.create') ? 'active' : '' }}" href="{{ route('admin.type-of-weights.create') }}">افزودن نوع وزن</a>
+                </li>
+                @endadmincan
+                @admincan('type_of_weights.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.type-of-weights.index') ? 'active' : '' }}" href="{{ route('admin.type-of-weights.index') }}">نمایش همه</a>
+                </li>
+                @endadmincan
+            </ul>
+        </li>
+        @endadminany
+
+        @adminany(['products.view', 'products.create'])
+        <li class="{{ request()->routeIs('admin.products.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="package"></i>
+                <span>محصولات</span>
+            </a>
+            <ul>
+                @admincan('products.create')
+                <li>
+                    <a class="{{ request()->routeIs('admin.products.create') ? 'active' : '' }}" href="{{ route('admin.products.create') }}">افزودن محصول</a>
+                </li>
+                @endadmincan
+                @admincan('products.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.products.index') ? 'active' : '' }}" href="{{ route('admin.products.index') }}">لیست محصولات</a>
+                </li>
+                @endadmincan
+            </ul>
+        </li>
+        @endadminany
+
+        @adminany(['orders.view', 'orders.supply.view'])
+        <li class="{{ request()->routeIs('admin.orders.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="file-text"></i>
+                <span>فاکتورها</span>
+            </a>
+            <ul>
+                @admincan('orders.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.orders.index') || request()->routeIs('admin.orders.show') ? 'active' : '' }}" href="{{ route('admin.orders.index') }}">همهٔ فاکتورها</a>
+                </li>
+                @endadmincan
+                @admincan('orders.supply.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.orders.supply') || request()->routeIs('admin.orders.supply.show') ? 'active' : '' }}" href="{{ route('admin.orders.supply') }}">ارسال‌شده به تأمین</a>
+                </li>
+                @endadmincan
+            </ul>
+        </li>
+        @endadminany
+
+        @adminany(['users.view', 'users.create'])
+        <li class="{{ request()->routeIs('admin.users.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="users"></i>
+                <span>کاربران</span>
+            </a>
+            <ul>
+                @admincan('users.create')
+                <li>
+                    <a class="{{ request()->routeIs('admin.users.create') ? 'active' : '' }}" href="{{ route('admin.users.create') }}">افزودن کاربر</a>
+                </li>
+                @endadmincan
+                @admincan('users.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.users.index') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">لیست کاربران</a>
+                </li>
+                @endadmincan
+            </ul>
+        </li>
+        @endadminany
+
+        @adminany(['articles.view', 'articles.create'])
+        <li class="{{ request()->routeIs('admin.articles.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="book-open"></i>
+                <span>مقالات</span>
+            </a>
+            <ul>
+                @admincan('articles.create')
+                <li>
+                    <a class="{{ request()->routeIs('admin.articles.create') ? 'active' : '' }}" href="{{ route('admin.articles.create') }}">افزودن مقاله</a>
+                </li>
+                @endadmincan
+                @admincan('articles.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.articles.index') ? 'active' : '' }}" href="{{ route('admin.articles.index') }}">لیست مقالات</a>
+                </li>
+                @endadmincan
+            </ul>
+        </li>
+        @endadminany
+
+        @adminany(['gift_codes.view', 'gift_codes.create'])
+        <li class="{{ request()->routeIs('admin.gift-codes.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="award"></i>
+                <span>کدهای هدیه</span>
+            </a>
+            <ul>
+                @admincan('gift_codes.create')
+                <li>
+                    <a class="{{ request()->routeIs('admin.gift-codes.create') ? 'active' : '' }}" href="{{ route('admin.gift-codes.create') }}">افزودن کد هدیه</a>
+                </li>
+                @endadmincan
+                @admincan('gift_codes.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.gift-codes.index') ? 'active' : '' }}" href="{{ route('admin.gift-codes.index') }}">لیست کدهای هدیه</a>
+                </li>
+                @endadmincan
+            </ul>
+        </li>
+        @endadminany
+
+        @adminany(['discount_codes.view', 'discount_codes.create'])
+        <li class="{{ request()->routeIs('admin.discount-codes.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="tag"></i>
+                <span>کدهای تخفیف</span>
+            </a>
+            <ul>
+                @admincan('discount_codes.create')
+                <li>
+                    <a class="{{ request()->routeIs('admin.discount-codes.create') ? 'active' : '' }}" href="{{ route('admin.discount-codes.create') }}">افزودن کد تخفیف</a>
+                </li>
+                @endadmincan
+                @admincan('discount_codes.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.discount-codes.index') ? 'active' : '' }}" href="{{ route('admin.discount-codes.index') }}">لیست کدهای تخفیف</a>
+                </li>
+                @endadmincan
+            </ul>
+        </li>
+        @endadminany
+
+        @adminany(['shipping_configs.view', 'shipping_configs.create'])
+        <li class="{{ request()->routeIs('admin.shipping-configs.*') ? 'open' : '' }}">
+            <a href="javascript:;">
+                <i class="nav-link-icon" data-feather="clipboard"></i>
+                <span>روش ارسال</span>
+            </a>
+            <ul>
+                @admincan('shipping_configs.create')
+                <li>
+                    <a class="{{ request()->routeIs('admin.shipping-configs.create') ? 'active' : '' }}" href="{{ route('admin.shipping-configs.create') }}">افزودن روش</a>
+                </li>
+                @endadmincan
+                @admincan('shipping_configs.view')
+                <li>
+                    <a class="{{ request()->routeIs('admin.shipping-configs.index') ? 'active' : '' }}" href="{{ route('admin.shipping-configs.index') }}">لیست روش‌ها</a>
+                </li>
+                @endadmincan
+            </ul>
+        </li>
+        @endadminany
+
+        @admincan('contact_settings.view')
+        <li>
+            <a class="{{ request()->routeIs('admin.contact-settings.*') ? 'active' : '' }}" href="{{ route('admin.contact-settings.edit') }}">
+                <i class="nav-link-icon" data-feather="phone"></i>
+                <span>مدیریت ارتباطات</span>
+            </a>
+        </li>
+        @endadmincan
+
+        @admincan('technical_backup.view')
+        <li>
+            <a class="{{ request()->routeIs('admin.technical-backup.*') ? 'active' : '' }}" href="{{ route('admin.technical-backup.index') }}">
+                <i class="nav-link-icon" data-feather="download"></i>
+                <span>پشتیبان‌گیری فنی</span>
+            </a>
+        </li>
+        @endadmincan
+
+        @if (auth('admin')->check() && auth('admin')->user()->is_super)
+        <li>
+            <a class="{{ request()->routeIs('admin.managers.*') ? 'active' : '' }}" href="{{ route('admin.managers.index') }}">
+                <i class="nav-link-icon" data-feather="shield"></i>
+                <span>مدیران و دسترسی‌ها</span>
+            </a>
+        </li>
+        @endif
+    </ul>
+</div>
